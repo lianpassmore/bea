@@ -65,8 +65,7 @@ function CheckInUI() {
     } else {
       setStatusText("Connecting to Bea...");
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
+        await navigator.mediaDevices.getUserMedia({ audio: true });
         await conversation.startSession({
           agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
         });
