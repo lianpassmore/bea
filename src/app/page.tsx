@@ -1,46 +1,49 @@
-import Link from 'next/link';
-import { Mic } from 'lucide-react';
+import { getCurrentMember } from '@/lib/auth'
+import { supabase } from '@/lib/supabase'
+import HomeClient, { type CrisisNotificationSummary } from './home-client'
 
-export default function Home() {
+type NotificationRow = {
+  id: string
+  briefing: string
+  crisis_level: 'concerned' | 'urgent'
+  created_at: string
+  affected: { name: string } | { name: string }[] | null
+}
+
+export default async function Home() {
+  const member = await getCurrentMember()
+
+  let crisisNotifications: CrisisNotificationSummary[] = []
+  if (member) {
+    const { data } = await supabase
+      .from('crisis_notifications')
+      .select(`
+        id, briefing, crisis_level, created_at,
+        affected:members!affected_member_id(name)
+      `)
+      .eq('contact_member_id', member.id)
+      .is('seen_at', null)
+      .order('created_at', { ascending: false })
+
+    crisisNotifications = ((data ?? []) as unknown as NotificationRow[]).map((n) => {
+      const affectedName = Array.isArray(n.affected)
+        ? n.affected[0]?.name
+        : n.affected?.name
+      return {
+        id: n.id,
+        briefing: n.briefing,
+        crisis_level: n.crisis_level,
+        created_at: n.created_at,
+        affected_member_name: affectedName ?? 'A family member',
+      }
+    })
+  }
+
   return (
-    <div className="flex flex-col h-[90vh] justify-between pt-12 pb-6">
-      
-      {/* Top: Greeting & Household Pulse */}
-      <div className="space-y-8 animate-fade-in px-2">
-        <header>
-          <h1 className="font-serif text-4xl text-bea-charcoal mb-3">
-            Kia ora, Lian.
-          </h1>
-          <p className="font-body text-bea-olive text-lg leading-relaxed">
-            The household feels a little rushed this morning. Evenings have been more settled lately.
-          </p>
-        </header>
-
-        {/* Member Card */}
-        <div className="bg-white/40 border border-bea-amber/20 rounded-2xl p-5 shadow-sm backdrop-blur-sm">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="font-serif text-2xl text-bea-charcoal">Lian</h2>
-              <p className="font-ui text-sm text-bea-olive mt-1">Last check-in: Yesterday</p>
-            </div>
-            <div className="bg-bea-amber/10 px-4 py-1.5 rounded-full border border-bea-amber/20">
-              <span className="font-body text-sm text-bea-charcoal">Reflective</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom: Talk to Bea Button */}
-      <div className="flex flex-col items-center gap-4">
-        <Link 
-          href="/check-in"
-          className="group flex items-center gap-3 bg-bea-charcoal text-bea-milk px-8 py-4 rounded-full font-body text-lg hover:bg-[#1a1a1a] transition-all shadow-md hover:shadow-lg"
-        >
-          <Mic className="w-5 h-5 text-bea-amber group-hover:scale-110 transition-transform" />
-          Talk to Bea
-        </Link>
-      </div>
-
-    </div>
-  );
+    <HomeClient
+      memberName={member?.name ?? null}
+      memberRole={member?.role ?? null}
+      crisisNotifications={crisisNotifications}
+    />
+  )
 }
