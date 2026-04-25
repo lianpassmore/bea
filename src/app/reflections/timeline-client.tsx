@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { User, Users, AudioLines, ChevronDown, type LucideIcon } from 'lucide-react'
 
@@ -18,6 +18,7 @@ export type TimelineEvent = {
   family_summary: string | null
   family_themes: string[]
   family_tone: string | null
+  family_pulse: string | null
 }
 
 const INITIAL_DAYS = 7
@@ -58,10 +59,21 @@ export default function TimelineClient({
 }) {
   const [nowMs] = useState(() => Date.now())
 
-  const notes = useMemo(
+  const individualNotes = useMemo(
     () =>
       events.filter(
         (e) => e.reflection !== null && e.reflection.trim().length > 0
+      ),
+    [events]
+  )
+
+  const familyNotes = useMemo(
+    () =>
+      events.filter(
+        (e) =>
+          e.kind !== 'individual' &&
+          ((e.family_pulse !== null && e.family_pulse.trim().length > 0) ||
+            (e.family_summary !== null && e.family_summary.trim().length > 0))
       ),
     [events]
   )
@@ -77,7 +89,25 @@ export default function TimelineClient({
         </p>
       </header>
 
-      <NotesSection notes={notes} nowMs={nowMs} />
+      <InsightsSection
+        title="Individual insights"
+        description="A few words from me to you, after we've talked or after I've listened."
+        notes={individualNotes}
+        renderItem={(e) => <IndividualNote event={e} />}
+        emptyBody="We haven't spoken yet. When we do, I'll leave a few words here."
+        emptyCta={{ href: '/check-in', label: 'Begin' }}
+        nowMs={nowMs}
+      />
+
+      <InsightsSection
+        title="Whānau insights"
+        description="How the room felt when I listened in."
+        notes={familyNotes}
+        renderItem={(e) => <FamilyNote event={e} />}
+        emptyBody="I haven't listened to a family moment yet. When I do, I'll leave a few words about how the room felt."
+        emptyCta={{ href: '/listen', label: 'Begin listening' }}
+        nowMs={nowMs}
+      />
 
       <TimelineSection events={events} nowMs={nowMs} />
 
@@ -93,7 +123,24 @@ export default function TimelineClient({
   )
 }
 
-function NotesSection({ notes, nowMs }: { notes: TimelineEvent[]; nowMs: number }) {
+function InsightsSection({
+  title,
+  description,
+  notes,
+  renderItem,
+  emptyBody,
+  emptyCta,
+  nowMs,
+}: {
+  title: string
+  description: string
+  notes: TimelineEvent[]
+  renderItem: (event: TimelineEvent) => ReactNode
+  emptyBody: string
+  emptyCta: { href: string; label: string }
+  nowMs: number
+}) {
+  const [open, setOpen] = useState(false)
   const [windowDays, setWindowDays] = useState(INITIAL_DAYS)
 
   const visible = useMemo(
@@ -103,68 +150,150 @@ function NotesSection({ notes, nowMs }: { notes: TimelineEvent[]; nowMs: number 
   const hasMore = visible.length < notes.length
 
   return (
-    <section className="mb-14 md:mb-20">
-      <h2 className="font-serif text-xl md:text-2xl text-bea-charcoal mb-6 md:mb-8">
-        Insights from Bea
-      </h2>
+    <section className="border-t border-bea-charcoal/10 pt-6 md:pt-8 mb-6 md:mb-8">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex items-center justify-between w-full group"
+      >
+        <h2 className="font-serif text-xl md:text-2xl text-bea-charcoal">{title}</h2>
+        <div className="flex items-center gap-3">
+          <span className="font-ui text-xs uppercase tracking-wide text-bea-blue">
+            {notes.length} {notes.length === 1 ? 'entry' : 'entries'}
+          </span>
+          <ChevronDown
+            size={18}
+            strokeWidth={1.5}
+            className={`text-bea-olive transition-transform duration-300 ${
+              open ? 'rotate-180' : ''
+            }`}
+            aria-hidden
+          />
+        </div>
+      </button>
 
-      {notes.length === 0 ? (
-        <div className="border-t border-bea-charcoal/10 pt-6 md:pt-8">
-          <p className="font-body text-bea-blue text-base md:text-lg leading-relaxed">
-            We haven&apos;t spoken yet. When we do, I&apos;ll leave a few words here.
-          </p>
-          <Link
-            href="/check-in"
-            className="group inline-flex items-center gap-4 mt-8 md:mt-10 font-body text-base md:text-lg text-bea-charcoal transition-opacity hover:opacity-70"
-          >
-            <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-16" />
-            Begin
-          </Link>
-        </div>
-      ) : visible.length === 0 ? (
-        <div className="border-t border-bea-charcoal/10 pt-6 md:pt-8">
-          <p className="font-body text-bea-blue text-base md:text-lg leading-relaxed">
-            Nothing in the last {windowDays} days.
-          </p>
-          {hasMore && (
-            <ShowEarlierButton onClick={() => setWindowDays((d) => d + STEP_DAYS)} />
-          )}
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-col gap-10 md:gap-14">
-            {visible.map((e) => (
-              <article
-                key={e.id}
-                className="border-t border-bea-charcoal/10 pt-5 md:pt-6"
+      <p className="font-body text-sm md:text-base text-bea-olive mt-3 leading-relaxed">
+        {description}
+      </p>
+
+      {open && (
+        <div className="mt-8 md:mt-10">
+          {notes.length === 0 ? (
+            <div>
+              <p className="font-body text-bea-blue text-base md:text-lg leading-relaxed">
+                {emptyBody}
+              </p>
+              <Link
+                href={emptyCta.href}
+                className="group inline-flex items-center gap-4 mt-8 md:mt-10 font-body text-base md:text-lg text-bea-charcoal transition-opacity hover:opacity-70"
               >
-                <div className="flex items-center justify-between mb-3 md:mb-4">
-                  <p className="font-ui text-xs text-bea-blue uppercase tracking-wide">
-                    {formatDate(e.timestamp)}
-                  </p>
-                  <p className="font-ui text-xs text-bea-olive/70 italic">
-                    After we spoke
-                  </p>
-                </div>
-                <p className="font-body text-bea-charcoal text-base md:text-lg leading-relaxed whitespace-pre-wrap">
-                  {e.reflection}
-                </p>
-                {e.emotional_tone && (
-                  <p className="font-serif text-sm text-bea-olive italic mt-4">
-                    {e.emotional_tone}
-                  </p>
-                )}
-              </article>
-            ))}
-          </div>
-          {hasMore && (
-            <div className="mt-10 md:mt-14">
-              <ShowEarlierButton onClick={() => setWindowDays((d) => d + STEP_DAYS)} />
+                <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-16" />
+                {emptyCta.label}
+              </Link>
             </div>
+          ) : visible.length === 0 ? (
+            <div>
+              <p className="font-body text-bea-blue text-base md:text-lg leading-relaxed">
+                Nothing in the last {windowDays} days.
+              </p>
+              {hasMore && (
+                <ShowEarlierButton onClick={() => setWindowDays((d) => d + STEP_DAYS)} />
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-10 md:gap-14">
+                {visible.map((e) => (
+                  <div key={e.id}>{renderItem(e)}</div>
+                ))}
+              </div>
+              {hasMore && (
+                <div className="mt-10 md:mt-14">
+                  <ShowEarlierButton onClick={() => setWindowDays((d) => d + STEP_DAYS)} />
+                </div>
+              )}
+            </>
           )}
-        </>
+        </div>
       )}
     </section>
+  )
+}
+
+function IndividualNote({ event }: { event: TimelineEvent }) {
+  const isListening = event.kind === 'listening' || event.kind === 'family'
+  return (
+    <article className="border-t border-bea-charcoal/10 pt-5 md:pt-6">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <p className="font-ui text-xs text-bea-blue uppercase tracking-wide">
+          {formatDate(event.timestamp)}
+        </p>
+        <p className="font-ui text-xs text-bea-olive/70 italic">
+          {isListening ? 'After I listened' : 'After we spoke'}
+        </p>
+      </div>
+      <p className="font-body text-bea-charcoal text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+        {event.reflection}
+      </p>
+      {event.emotional_tone && (
+        <p className="font-serif text-sm text-bea-olive italic mt-4">
+          {event.emotional_tone}
+        </p>
+      )}
+    </article>
+  )
+}
+
+function FamilyNote({ event }: { event: TimelineEvent }) {
+  const headline = event.family_pulse ?? event.family_summary
+  const detail =
+    event.family_pulse && event.family_summary && event.family_pulse !== event.family_summary
+      ? event.family_summary
+      : null
+  return (
+    <article className="border-t border-bea-charcoal/10 pt-5 md:pt-6">
+      <div className="flex items-center justify-between mb-3 md:mb-4">
+        <p className="font-ui text-xs text-bea-blue uppercase tracking-wide">
+          {formatDate(event.timestamp)}
+        </p>
+        <p className="font-ui text-xs text-bea-olive/70 italic">
+          {event.kind === 'family' ? 'After our family check-in' : 'After I listened'}
+        </p>
+      </div>
+      {headline && (
+        <p className="font-body text-bea-charcoal text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+          {headline}
+        </p>
+      )}
+      {event.family_tone && (
+        <p className="font-serif text-sm text-bea-olive italic mt-4">
+          {event.family_tone}
+        </p>
+      )}
+      {detail && (
+        <p className="font-body text-bea-charcoal/90 text-sm md:text-base leading-relaxed whitespace-pre-wrap mt-5">
+          {detail}
+        </p>
+      )}
+      {event.family_themes.length > 0 && (
+        <div className="mt-5">
+          <p className="font-ui text-xs uppercase tracking-wide text-bea-blue mb-2">
+            In the room
+          </p>
+          <ul className="flex flex-wrap gap-x-3 gap-y-1">
+            {event.family_themes.map((t, i) => (
+              <li
+                key={`${t}-${i}`}
+                className="font-body text-sm md:text-base text-bea-charcoal"
+              >
+                {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </article>
   )
 }
 

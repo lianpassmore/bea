@@ -20,6 +20,7 @@ type SessionRow = {
   family_summary: string | null
   family_themes: string[] | null
   family_tone: string | null
+  family_pulse: string | null
 }
 
 type MemberSummaryRow = {
@@ -45,7 +46,7 @@ export default async function ReflectionsPage() {
       .limit(200),
     supabase
       .from('listening_sessions')
-      .select('id, started_at, kind, family_summary, family_themes, family_tone')
+      .select('id, started_at, kind, family_summary, family_themes, family_tone, family_pulse')
       .eq('status', 'attributed')
       .not('started_at', 'is', null)
       .order('started_at', { ascending: false })
@@ -75,6 +76,7 @@ export default async function ReflectionsPage() {
       family_summary: null,
       family_themes: [],
       family_tone: null,
+      family_pulse: null,
     }))
 
   const sessionEvents: TimelineEvent[] = ((sessionsRes.data ?? []) as SessionRow[])
@@ -93,6 +95,7 @@ export default async function ReflectionsPage() {
         family_summary: s.family_summary,
         family_themes: s.family_themes ?? [],
         family_tone: s.family_tone,
+        family_pulse: s.family_pulse,
       }
     })
 
