@@ -105,7 +105,7 @@ export default function SchedulePage() {
   // ─────────────────────────────────────────────────────────────────
   if (showForm) {
     return (
-      <div key="form-view" className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 animate-fade-in max-w-sm mx-auto w-full">
+      <div key="form-view" className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 animate-fade-in max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full">
         <PageBackground variant="forward" />
 
         <header className="mb-8 md:mb-12">
@@ -214,7 +214,7 @@ export default function SchedulePage() {
   // VIEW 2: THE LIST (Existing schedules)
   // ─────────────────────────────────────────────────────────────────
   return (
-    <div key="list-view" className="flex flex-col flex-1 pt-8 pb-8 md:pt-12 md:pb-12 animate-fade-in w-full max-w-sm mx-auto">
+    <div key="list-view" className="flex flex-col flex-1 pt-8 pb-8 md:pt-12 md:pb-12 animate-fade-in w-full max-w-sm md:max-w-md lg:max-w-lg mx-auto">
       <PageBackground variant="forward" />
 
       {/* Header */}

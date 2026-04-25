@@ -78,7 +78,7 @@ export default function SetupPage() {
 
   return (
     // Generous top padding. Removed min-h screen height to let content float naturally.
-    <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 px-2 max-w-sm mx-auto w-full">
+    <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 px-2 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full">
       <PageBackground variant="arrival" />
 
       {/* Changing the key forces the fade-in animation on every step change */}

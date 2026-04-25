@@ -57,7 +57,16 @@ export const DAILY_LINES = [
 ]
 
 export function getDailyLine(date: Date = new Date()): string {
-  const start = new Date(date.getFullYear(), 0, 0)
-  const dayOfYear = Math.floor((date.getTime() - start.getTime()) / 86_400_000)
+  // Roll over at NZ midnight regardless of server timezone.
+  const nz = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Pacific/Auckland',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date)
+  const [y, m, d] = nz.split('-').map(Number)
+  const start = Date.UTC(y, 0, 0)
+  const today = Date.UTC(y, m - 1, d)
+  const dayOfYear = Math.floor((today - start) / 86_400_000)
   return DAILY_LINES[dayOfYear % DAILY_LINES.length]
 }

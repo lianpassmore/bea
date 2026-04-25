@@ -94,8 +94,9 @@ export default async function RootLayout({
           children
         ) : (
           <>
-            {/* pb-28 leaves room for the fixed footer tab bar */}
-            <main className="max-w-md mx-auto min-h-screen p-8 pb-28 flex flex-col relative">
+            {/* Mobile-first narrow column; widens on tablet/desktop. */}
+            {/* pb-28 leaves room for the fixed footer tab bar. */}
+            <main className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto min-h-screen px-5 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 md:py-10 pb-28 md:pb-32 flex flex-col relative">
 
               {user && (
                 <HeaderBar

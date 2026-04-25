@@ -166,7 +166,7 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
   // ── Start screen (authenticated solo) ──────────────────────────────
   if (!inSession && authedMember) {
     return (
-      <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm mx-auto w-full animate-fade-in">
+      <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <PageBackground variant="witness" />
 
         <header className="mb-10 md:mb-16">
@@ -201,7 +201,7 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
   // ── Selection view (fallback: unlinked / guest-only) ────────────────
   if (!inSession) {
     return (
-      <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm mx-auto w-full animate-fade-in">
+      <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <PageBackground variant="witness" />
 
         <header className="mb-10 md:mb-16 space-y-6">
@@ -267,7 +267,7 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
 
   // ── Active session view ─────────────────────────────────────────────
   return (
-    <div className="flex flex-col items-center justify-between flex-1 py-12 md:py-20 max-w-sm mx-auto w-full animate-fade-in">
+    <div className="flex flex-col items-center justify-between flex-1 py-12 md:py-20 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
       <PageBackground variant="witness" />
 
       {/* 1. Status Text (Replaced standard error phrasing with first-person Bea text) */}

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase-server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { getCurrentMember } from '@/lib/auth'
 import { getDailyLine } from '@/lib/daily-lines'
 import PageBackground from '@/components/page-background'
@@ -35,7 +36,7 @@ export default async function Home() {
 
   let currentGoal: { id: string; title: string } | null = null
   if (member) {
-    const { data: goalRow } = await supabase
+    const { data: goalRow } = await supabaseAdmin
       .from('goals')
       .select('id, title')
       .eq('owner_type', 'member')

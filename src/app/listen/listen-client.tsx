@@ -192,7 +192,7 @@ export default function ListenClient() {
 
   if (phase === 'roster') {
     return (
-      <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm mx-auto w-full animate-fade-in">
+      <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <header className="mb-8 md:mb-12">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
             Who&apos;s in the room?
@@ -283,7 +283,7 @@ export default function ListenClient() {
 
   if (phase === 'recording') {
     return (
-      <div className="flex flex-col items-center justify-between flex-1 py-12 md:py-20 max-w-sm mx-auto w-full animate-fade-in">
+      <div className="flex flex-col items-center justify-between flex-1 py-12 md:py-20 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <div className="text-center w-full space-y-4">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
             I am listening.
@@ -317,7 +317,7 @@ export default function ListenClient() {
 
   if (phase === 'uploading') {
     return (
-      <div className="flex flex-col items-center justify-center flex-1 py-12 md:py-20 max-w-sm mx-auto w-full animate-fade-in">
+      <div className="flex flex-col items-center justify-center flex-1 py-12 md:py-20 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <h1 className="font-serif text-2xl md:text-3xl text-bea-charcoal leading-tight text-center">
           Taking note of what I heard…
         </h1>
@@ -327,7 +327,7 @@ export default function ListenClient() {
 
   if (phase === 'done') {
     return (
-      <div className="flex flex-col items-center justify-center flex-1 py-12 md:py-20 max-w-sm mx-auto w-full animate-fade-in">
+      <div className="flex flex-col items-center justify-center flex-1 py-12 md:py-20 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <h1 className="font-serif text-2xl md:text-3xl text-bea-charcoal leading-tight text-center">
           Kept safely.
         </h1>
@@ -336,7 +336,7 @@ export default function ListenClient() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center flex-1 py-12 md:py-20 max-w-sm mx-auto w-full animate-fade-in">
+    <div className="flex flex-col items-center justify-center flex-1 py-12 md:py-20 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
       <h1 className="font-serif text-2xl md:text-3xl text-bea-charcoal leading-tight text-center mb-6">
         Something stopped us.
       </h1>

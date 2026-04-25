@@ -72,9 +72,9 @@ function FooterBarInner({ isPrimary }: { isPrimary: boolean }) {
   return (
     <nav
       aria-label="Primary"
-      className="fixed bottom-0 inset-x-0 z-40 bg-bea-milk/90 backdrop-blur border-t border-bea-charcoal/10"
+      className="fixed bottom-0 inset-x-0 z-40 bg-bea-milk/90 backdrop-blur border-t border-bea-charcoal/10 pb-[env(safe-area-inset-bottom)]"
     >
-      <ul className="max-w-md mx-auto flex items-stretch justify-between px-4 py-3">
+      <ul className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto flex items-stretch justify-between px-4 sm:px-6 md:px-8 lg:px-12 py-3">
         {tabs.map((tab) => {
           const active = tab.match(pathname, mode)
           const Icon = tab.icon
