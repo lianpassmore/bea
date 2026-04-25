@@ -657,11 +657,16 @@ A single JSON object. Strict schema:
       "confidence": 0.0 to 1.0,
       "reasoning": "Why now, why this"
     }
-  }
+  },
+  "considered_and_rejected": [
+    { "draft": "An alternative sentence Bea could have said that you decided against.", "why_not": "1 sentence on why this draft fails — too clinical, too declarative, wrong moment, repeats prior reflection, etc." }
+  ]
 }
 \`\`\`
 
 \`offer_to_raise\` and \`refocus_question\` are nullable and are usually null. They are exceptions, not defaults. \`listening_priority\` and \`listening_direction\` are always populated — Bea always needs to know how to listen, even when she's not raising anything.
+
+\`considered_and_rejected\` should contain at least one alternative draft you genuinely considered and discarded — even when you ultimately raise nothing. This is the audit trail. It is how a human reviewer (Lian, Lee) can see the judgement calls you made. If you truly considered nothing else, return an empty array, but that should be rare. Most decisions have a runner-up.
 
 ---
 
