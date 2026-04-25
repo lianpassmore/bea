@@ -295,6 +295,7 @@ function HouseholdScreen() {
             agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
             dynamicVariables: {
               user_name: 'the family',
+              user_member_id: '',
               last_checkin_date: ctx.last_checkin_date ?? 'unknown',
               individual_summary: ctx.individual_summary ?? 'No previous sessions.',
               family_summary: ctx.family_summary ?? 'No family sessions on record.',

@@ -130,6 +130,7 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
         agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
         dynamicVariables: {
           user_name: member.name,
+          user_member_id: member.id,
           last_checkin_date: ctx.last_checkin_date ?? 'unknown',
           individual_summary: ctx.individual_summary ?? 'No previous check-in on record.',
           family_summary: ctx.family_summary ?? 'No family check-ins on record.',
@@ -151,7 +152,7 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       conversation.startSession({
         agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
-        dynamicVariables: { user_name: 'a visitor' },
+        dynamicVariables: { user_name: 'a visitor', user_member_id: '' },
       });
     } catch {
       setStatusText('I could not arrive. Please try again.');

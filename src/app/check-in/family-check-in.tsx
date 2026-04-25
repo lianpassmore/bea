@@ -142,6 +142,7 @@ function FamilyCheckInUI() {
         agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
         dynamicVariables: {
           user_name: 'family',
+          user_member_id: '',
           mode: 'family',
         },
       })
