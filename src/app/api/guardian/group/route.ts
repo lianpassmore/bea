@@ -169,8 +169,9 @@ export async function POST(request: NextRequest) {
   try {
     const response = await anthropic.messages.create({
       model: 'claude-opus-4-7',
-      max_tokens: 12000,
+      max_tokens: 16000,
       thinking: { type: 'adaptive', display: 'summarized' },
+      output_config: { effort: 'high' },
       system: GUARDIAN_GROUP_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })

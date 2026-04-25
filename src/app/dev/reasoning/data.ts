@@ -32,6 +32,7 @@ type CheckInRow = {
   crisis_reasoning: string | null
   crisis_in_session_response: string | null
   crisis_briefing_for_contact: string | null
+  crisis_agent_thinking: string | null
   guardian_thinking: string | null
   transcript: unknown
 }
@@ -472,16 +473,17 @@ async function loadCheckInSession(id: string): Promise<SelectedSession | null> {
     agents.push({
       agent: 'Crisis (G10)',
       model: 'claude-opus-4-7',
-      thinkingEnabled: !!checkIn.crisis_reasoning,
+      thinkingEnabled: !!checkIn.crisis_agent_thinking,
       inputSummary: oneLine(transcriptToText(checkIn.transcript)),
       output: {
         crisis_level: checkIn.crisis_level,
         crisis_signals: checkIn.crisis_signals,
+        crisis_reasoning: checkIn.crisis_reasoning,
         crisis_in_session_response: checkIn.crisis_in_session_response,
         crisis_briefing_for_contact: checkIn.crisis_briefing_for_contact,
         notifications_created: crisisRows.length,
       },
-      thinking: traceFromText(checkIn.crisis_reasoning),
+      thinking: traceFromText(checkIn.crisis_agent_thinking),
     })
   }
 

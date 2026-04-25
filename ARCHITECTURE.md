@@ -31,16 +31,16 @@ The family is the unit. Every individual conversation serves that unit.
 ## 2. High-level diagram
 
 ```
-                       Voice in the home
-                              │
-       ┌──────────────────────┼──────────────────────┐
-       │                      │                      │
-  1:1 check-in            Household                 Alexa
-  (ElevenLabs            passive listen             skill
-   guided)               (Azure diarize)
-       │                      │                      │
-       └──────────┬───────────┴──────────────────────┘
-                  ▼
+                Voice in the home
+                       │
+       ┌───────────────┴───────────────┐
+       │                               │
+  1:1 check-in                    Household
+  (ElevenLabs                  passive listen
+   guided)                     (Azure diarize)
+       │                               │
+       └───────────────┬───────────────┘
+                       ▼
         Next.js API routes (Vercel)
                   │
        ┌──────────┼─────────────┐
@@ -79,18 +79,17 @@ group sessions, Speaker Recognition for member voice ID.
 | `/listen` | [src/app/listen/](src/app/listen/) | Passive household listening. Bea sits silently in the room; only Azure transcribes. No voice agent runs. Used to capture organic family conversation. |
 | `/household` | [src/app/household/](src/app/household/) | Member roster management — add, view, voice-enroll, withdraw. Primary-only. |
 | `/reflections` | [src/app/reflections/](src/app/reflections/) | Timeline of Bea's per-session reflections, merged across 1:1s and group sessions. |
-| `/schedule` | [src/app/schedule/](src/app/schedule/) | Rhythm management — recurring listen / check-in / group prompts, propagated to Alexa reminders. |
+| `/schedule` | [src/app/schedule/](src/app/schedule/) | Rhythm management — recurring listen / check-in / group prompts. |
 | `/setup` | [src/app/setup/](src/app/setup/) | New-member onboarding: consent, name, 30-second voice enrollment to Azure. |
 | `/welcome`, `/login` | [src/app/welcome/](src/app/welcome/), [src/app/login/](src/app/login/) | OAuth/magic-link sign-in and post-auth member-link gating. |
 | `/` (home) | [src/app/page.tsx](src/app/page.tsx) | Dashboard. Shows unseen Guardian-10 crisis notifications, recent reflections, family pulse. |
-| Alexa skill | [src/app/api/alexa/handler/route.ts](src/app/api/alexa/handler/route.ts) | Voice front door on Alexa devices. Plants recurring reminders, accepts user message → Claude → response, captures transcript on session end. |
 | PWA push | [src/lib/web-push.ts](src/lib/web-push.ts) | Browser notifications for advance/start/end of scheduled sessions and crisis alerts. |
 
 ---
 
 ## 4. The session lifecycle (1:1 voice check-in)
 
-This is the core loop. Other surfaces (group, passive, Alexa) are variants.
+This is the core loop. Other surfaces (group, passive) are variants.
 
 ```
 User taps Begin
@@ -222,7 +221,7 @@ All tables live in Supabase, all use `uuid` primary keys, `created_at` is
 
 ### Safety & operations
 - **`crisis_notifications`** — Guardian-10 alerts to designated contacts. `check_in_id`, `affected_member_id`, `contact_member_id`, `crisis_level`, `briefing`, `seen_at`.
-- **`schedules`** — recurring listen/check-in/group prompts. `label`, `days[]`, `time`, `mode`, `active`. Drives Alexa reminders.
+- **`schedules`** — recurring listen/check-in/group prompts. `label`, `days[]`, `time`, `mode`, `active`.
 - **`push_subscriptions`** — Web Push endpoints. `endpoint`, `p256dh`, `auth`, `member_id`, `prefs` jsonb (which categories to receive).
 - **`family_insights`** — older table holding G5 outputs. Has `silence_evaluation`, `insight_original` columns.
 
@@ -265,7 +264,6 @@ See [§6](#6-the-voice-tools-beas-hands). All under `/api/bea-tools/*`.
 - `GET /api/crisis-notifications/[id]`, `POST /api/crisis-notifications/[id]/seen`
 - `GET /api/reflections` — merged timeline of 1:1 + group reflections.
 - `GET /api/memory/init` — one-shot creates the Anthropic memory store; copy the returned `store_id` into `ANTHROPIC_MEMORY_STORE_ID`.
-- `POST /api/alexa/handler` — Alexa Skills Kit endpoint. Handles LaunchRequest (plants reminders), CaptureIntent (Claude reply), SessionEnded (saves transcript, fires guardians).
 - `POST /api/chat` — text-mode chat using the same `BEA_SYSTEM_PROMPT`. Used by web chat surfaces; not the voice path.
 
 ---
@@ -306,7 +304,7 @@ The system prompt itself lives in two places:
   for the ElevenLabs dashboard. **The dashboard prompt is the source of truth
   for the voice agent.**
 - [src/lib/prompts.ts](src/lib/prompts.ts) `BEA_SYSTEM_PROMPT` — used by
-  `/api/chat` and `/api/alexa/handler` (text + Alexa surfaces).
+  `/api/chat` (text surfaces).
 
 ---
 
@@ -319,7 +317,6 @@ The system prompt itself lives in two places:
 | Database | Supabase (`NEXT_PUBLIC_SUPABASE_URL`). Migrations applied via Supabase dashboard or CLI. |
 | Voice agent | ElevenLabs Conversational AI, agent name "Bea", LLM Claude Sonnet 4.6. Tool IDs attached via PATCH to `/v1/convai/agents/{id}`. |
 | Speech | Azure Cognitive Services region `australiaeast`. |
-| Alexa skill | AWS-hosted skill, endpoint `/api/alexa/handler`. |
 
 ---
 
@@ -369,7 +366,7 @@ shared across the family. Guardian 1 writes per-member context paths; Guardian
   but no goals exist in production yet — the system has nothing to track until
   someone says "I want to..." in a session and Bea drafts a goal.
 - Push notifications work but are not yet wired to most automatic triggers
-  (currently invoked by the Alexa flow and ad-hoc from `/api/notifications/broadcast`).
+  (currently invoked ad-hoc from `/api/notifications/broadcast`).
 - The Anthropic memory store integration is one-way at the moment (Guardians 1
   and 2 use it; the new pattern agent does not yet write to it).
 - Family-mode and passive-listen sessions still run through `BEA_SYSTEM_PROMPT`

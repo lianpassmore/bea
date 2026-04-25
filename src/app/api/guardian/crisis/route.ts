@@ -177,8 +177,9 @@ ${formatPriorSessions(priors)}`
     // 5. Opus 4.7 with 4k thinking — deepest, most careful call in the system
     const response = await anthropic.messages.create({
       model: 'claude-opus-4-7',
-      max_tokens: 6000,
+      max_tokens: 12000,
       thinking: { type: 'adaptive', display: 'summarized' },
+      output_config: { effort: 'high' },
       system: GUARDIAN_CRISIS_PROMPT,
       messages: [{ role: 'user', content: userContent }],
     })
@@ -186,6 +187,11 @@ ${formatPriorSessions(priors)}`
     const textBlocks = response.content.filter((b): b is Anthropic.TextBlock => b.type === 'text')
     const lastText = textBlocks[textBlocks.length - 1]
     if (!lastText) throw new Error('No text block in response')
+
+    const thinkingBlock = response.content.find(
+      (b): b is Anthropic.ThinkingBlock => b.type === 'thinking',
+    )
+    const crisis_agent_thinking = thinkingBlock?.thinking ?? null
 
     const data = JSON.parse(lastText.text) as CrisisOutput
 
@@ -199,6 +205,7 @@ ${formatPriorSessions(priors)}`
         crisis_reasoning: data.crisis_reasoning,
         crisis_in_session_response: data.crisis_in_session_response,
         crisis_briefing_for_contact: data.crisis_briefing_for_contact,
+        crisis_agent_thinking,
       })
       .eq('id', check_in_id)
 
