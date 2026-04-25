@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 
 // Azure Fast Transcription — the Speech service, same key/region already
@@ -198,13 +199,21 @@ export async function POST(request: NextRequest) {
   }
 
   // Fire the group guardian — attribution + summarisation in one Claude call.
-  // Fire-and-forget so the client gets the session id immediately.
+  // Wrapped in `after()` so Vercel keeps the parent function alive long enough
+  // for the trigger fetch to actually leave (otherwise the child invocation
+  // can be killed before it starts).
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-  fetch(`${baseUrl}/api/guardian/group`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session_id: session.id }),
-  }).catch((err) => console.error('[listen/finalize] group guardian trigger failed:', err))
+  after(async () => {
+    try {
+      await fetch(`${baseUrl}/api/guardian/group`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: session.id }),
+      })
+    } catch (err) {
+      console.error('[listen/finalize] group guardian trigger failed:', err)
+    }
+  })
 
   return NextResponse.json({
     ok: true,

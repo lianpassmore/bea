@@ -8,10 +8,19 @@ import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 // Query: ?member_id=<uuid>   → that member's active + draft goals
 //        ?scope=whanau       → family-wide active + draft goals
 //        no params           → everything currently active or draft
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams
   const memberId = params.get('member_id')
   const scope = params.get('scope')
+
+  if (memberId && !UUID_RE.test(memberId)) {
+    return NextResponse.json(
+      { error: 'member_id must be a valid uuid' },
+      { status: 400 },
+    )
+  }
 
   let query = supabase
     .from('goals')

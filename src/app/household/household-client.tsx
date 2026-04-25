@@ -338,7 +338,7 @@ function HouseholdScreen() {
               {new Date().toLocaleDateString('en-NZ', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
             <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
-              Hello family, I&apos;m ready for your family check-in when you are.
+              Hello, family. I&apos;m ready for your check-in when you are.
             </p>
           </div>
 
@@ -347,11 +347,11 @@ function HouseholdScreen() {
             <div>
               {next ? (
                 <p className="font-body text-base md:text-lg text-bea-charcoal leading-relaxed">
-                  I will be present for <span className="italic">{next.schedule.label}</span> {next.label}.
+                  I&apos;ll be present for <span className="italic">{next.schedule.label}</span> {next.label}.
                 </p>
               ) : (
                 <p className="font-body text-base md:text-lg text-bea-olive">
-                  I do not have any rhythms scheduled today.
+                  I don&apos;t have any rhythms scheduled today.
                 </p>
               )}
             </div>

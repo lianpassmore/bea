@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 
 type TranscriptRow = { role: string; message: string; time_in_call_secs: number }
@@ -130,6 +131,11 @@ export async function POST(request: NextRequest) {
 
   // Fire all per-session guardians — none block the response.
   // Each writes its results back to the check_ins row independently.
+  //
+  // Wrapped in `after()` so Vercel keeps the function instance alive until the
+  // unawaited fetches actually leave. Without this, Vercel can kill the parent
+  // serverless invocation as soon as we return, which silently drops some of
+  // the fire-and-forget guardian triggers (G4 reflect was the visible victim).
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
   const guardianPayload = JSON.stringify({ check_in_id: inserted.id, transcript, member_id: member_id ?? null })
   const guardianHeaders = { 'Content-Type': 'application/json' }
@@ -142,13 +148,19 @@ export async function POST(request: NextRequest) {
     '/api/guardian/crisis',     // Guardian 10: safety layer — writes in-session response, notifies contacts
   ]
 
-  for (const path of guardians) {
-    fetch(`${baseUrl}${path}`, {
-      method: 'POST',
-      headers: guardianHeaders,
-      body: guardianPayload,
-    }).catch((err) => console.error(`${path} trigger failed:`, err))
-  }
+  after(async () => {
+    await Promise.allSettled(
+      guardians.map((path) =>
+        fetch(`${baseUrl}${path}`, {
+          method: 'POST',
+          headers: guardianHeaders,
+          body: guardianPayload,
+        }).catch((err) => {
+          console.error(`${path} trigger failed:`, err)
+        }),
+      ),
+    )
+  })
 
   return NextResponse.json({ saved: true, check_in_id: inserted.id })
 }

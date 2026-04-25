@@ -47,7 +47,7 @@ The family is the unit. Every individual conversation serves that unit.
        │          │             │
     Supabase   Anthropic     Azure Speech
     (Postgres) (Claude +     (Fast Transcription
-                memory)       + Speaker Recognition)
+                memory)       with diarization)
        │          │             │
        └──────────┼─────────────┘
                   ▼
@@ -64,7 +64,9 @@ The family is the unit. Every individual conversation serves that unit.
 **LLM:** Anthropic Claude (Sonnet 4.6 inside ElevenLabs, Opus 4.7 for batch
 guardian agents).
 **Speech:** Azure Cognitive Services — Fast Transcription with diarization for
-group sessions, Speaker Recognition for member voice ID.
+group sessions. Speakers are anonymous ("Speaker 1, Speaker 2…") at the Azure
+layer; attribution to known members is done by Claude in the Group guardian
+based on transcript content, not voice profile.
 **Voice agent:** ElevenLabs Conversational AI (one agent: "Bea").
 **Memory:** Anthropic Memory Store, one shared store for the whole household.
 
@@ -74,13 +76,13 @@ group sessions, Speaker Recognition for member voice ID.
 
 | Surface | Code | What it does |
 |---|---|---|
-| `/check-in` | [src/app/check-in/](src/app/check-in/) | 1:1 voice session. Identifies member via Azure voice ID (or chooses by name), pulls listening context, opens an ElevenLabs session with dynamic variables, records transcript, fires guardian pipeline. |
+| `/check-in` | [src/app/check-in/](src/app/check-in/) | 1:1 voice session. Identifies member via login session (or manual roster pick for unauthed flow), pulls listening context, opens an ElevenLabs session with dynamic variables, records transcript, fires guardian pipeline. |
 | `/check-in` (family mode) | [src/app/check-in/family-check-in.tsx](src/app/check-in/family-check-in.tsx) | Guided whole-family check-in. Multiple speakers in one session. Records audio, sends to Azure for diarization. |
 | `/listen` | [src/app/listen/](src/app/listen/) | Passive household listening. Bea sits silently in the room; only Azure transcribes. No voice agent runs. Used to capture organic family conversation. |
 | `/household` | [src/app/household/](src/app/household/) | Member roster management — add, view, voice-enroll, withdraw. Primary-only. |
 | `/reflections` | [src/app/reflections/](src/app/reflections/) | Timeline of Bea's per-session reflections, merged across 1:1s and group sessions. |
 | `/schedule` | [src/app/schedule/](src/app/schedule/) | Rhythm management — recurring listen / check-in / group prompts. |
-| `/setup` | [src/app/setup/](src/app/setup/) | New-member onboarding: consent, name, 30-second voice enrollment to Azure. |
+| `/setup` | [src/app/setup/](src/app/setup/) | New-member onboarding: consent and name. Voice-enrollment UI exists but is dormant (Azure Speaker Recognition not in the live flow — see §8). |
 | `/welcome`, `/login` | [src/app/welcome/](src/app/welcome/), [src/app/login/](src/app/login/) | OAuth/magic-link sign-in and post-auth member-link gating. |
 | `/` (home) | [src/app/page.tsx](src/app/page.tsx) | Dashboard. Shows a daily affirmation line ([src/lib/daily-lines.ts](src/lib/daily-lines.ts)), unseen Guardian-10 crisis notifications, recent reflections, family pulse. |
 | `/audit/[goalId]` | [src/app/audit/[goalId]/](src/app/audit/[goalId]/) | Per-goal audit surface. Renders observations, sessions, and every Coach run for the goal — including the extended-thinking trace and the alternative drafts the Coach considered and rejected. The Human Proxy Theory in working code. |
@@ -97,7 +99,7 @@ This is the core loop. Other surfaces (group, passive) are variants.
 User taps Begin
       │
       ▼
-  Voice identify (Azure Speaker Recognition) → member_id
+  Member resolved from login session (or manual roster pick) → member_id
       │
       ▼
   GET /api/guardian/context?memberId=...    ← reads memory cache + most recent coach_read
@@ -261,9 +263,14 @@ Grouped by purpose. All routes are Next.js 16 server route handlers.
 - `POST /api/check-ins` (and `GET`) — 1:1 transcripts. POST saves and fires the per-session guardian pipeline. GET returns the latest 1:1 + family session for the dashboard.
 - `POST /api/voice` — synchronous text-to-speech via ElevenLabs.
 
-### Voice identity
-- `POST /api/voice/enroll` — 30-second audio → Azure Speaker Recognition profile creation (polled up to 60s). Sets `azure_profile_id`, `voice_enrolled=true`. `DEMO_FAKE_VOICE` env flag bypasses Azure for local dev.
-- `POST /api/voice/identify` — check-in audio → Azure identify → returns matched `member_id`, name, confidence (threshold 0.7).
+### Voice identity (dormant)
+Both routes below are implemented against Azure Speaker Recognition but are
+**not wired into the live check-in flow**. The Azure Speaker Recognition
+subscription is pending approval, so identification by voice profile is
+currently shelved. Member identity comes from login session (1:1) or pre-session
+roster selection (family). The routes are kept for when the subscription lands.
+- `POST /api/voice/enroll` — 30-second audio → Azure Speaker Recognition profile creation (polled up to 60s). Sets `azure_profile_id`, `voice_enrolled=true`. `DEMO_FAKE_VOICE` env flag bypasses Azure for local dev. **Currently unused by `/setup`.**
+- `POST /api/voice/identify` — check-in audio → Azure identify → returns matched `member_id`, name, confidence (threshold 0.7). **Never called from the check-in path.**
 
 ### Guardian agents
 See [§5](#5-the-agents-claude-calls). All under `/api/guardian/*`. The Coach
@@ -307,7 +314,7 @@ actions, not REST endpoints.
 | `ANTHROPIC_API_KEY` | Claude calls in all guardian agents |
 | `ANTHROPIC_MEMORY_STORE_ID` | Per-household persistent memory |
 | `NEXT_PUBLIC_BASE_URL` | Used by `/api/guardian/group` to fire `/api/guardian/patterns` (must be the public URL on prod) |
-| `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION` | Azure Fast Transcription + Speaker Recognition |
+| `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION` | Azure Fast Transcription with diarization (Speaker Recognition routes are dormant) |
 | `ELEVENLABS_API_KEY` | TTS, agent admin (CLI), tool registration |
 | `ELEVENLABS_VOICE_ID` | Bea's voice |
 | `ELEVENLABS_AGENT_ID`, `NEXT_PUBLIC_ELEVENLABS_AGENT_ID` | The Bea conversational agent |
@@ -352,8 +359,14 @@ The system prompt itself lives in two places:
 ## 11. Architectural patterns to know about
 
 **Fire-and-forget guardians.** When a session ends, the user gets an immediate
-response. All guardian work runs in parallel `fetch(...)` calls without
-awaiting. There is no job queue — Vercel serverless picks them up.
+response. All guardian work runs in parallel `fetch(...)` calls scheduled via
+Next.js [`after()`](https://nextjs.org/docs/app/api-reference/functions/after),
+which keeps the parent serverless invocation alive long enough for the trigger
+fetches to actually leave (without it, Vercel can kill the parent before they
+propagate, silently dropping calls). There is no job queue — each guardian is
+its own serverless invocation. Heavy ones (reflect, crisis, group, patterns,
+coach, insight) export `maxDuration` so their Opus 4.7 calls don't get cut
+off by the platform default.
 
 **Two-pass voice agent.** ElevenLabs (Sonnet 4.6) handles live conversation
 fast and warm. Heavier reasoning (pattern detection, family insight, crisis
@@ -390,9 +403,10 @@ insight should not surface. The dashboard hides anything where
 `silence_decision != 'surface'`.
 
 **Consent honoured at every layer.** Guests skip persistence entirely.
-Withdrawn members keep their voice profile but no new content is created.
-Group sessions attribute non-consented members in the speaker map (so
-transcripts read correctly) but do not generate per-member summaries for them.
+Withdrawn members keep their roster row (and any dormant `azure_profile_id`)
+but no new content is created. Group sessions attribute non-consented members
+in the speaker map (so transcripts read correctly) but do not generate
+per-member summaries for them.
 
 **Memory is per-household, not per-member.** One Anthropic memory store id is
 shared across the family. Guardian 1 writes per-member paths

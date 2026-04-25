@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 import { PATTERN_DETECTION_PROMPT } from '@/lib/prompts'
+
+// Opus 4.7 — long-running. Pattern agent also fans out coach triggers via after().
+export const maxDuration = 120
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -331,12 +335,16 @@ export async function POST(request: NextRequest) {
     if (upd.action === 'reinforce') {
       const existing = patternById.get(upd.pattern_id)
       if (!existing) continue
-      const newConf = Math.max(
-        0,
-        Math.min(1, existing.confidence + (upd.confidence_delta ?? 0.1)),
-      )
       const supporting = Array.from(
         new Set([...(existing.supporting_session_ids ?? []), session.id]),
+      )
+      // Single-session patterns must stay capped at 0.4. Reinforcing from the
+      // same session that created (or last touched) the pattern doesn't earn
+      // cross-session corroboration, so the cap still applies.
+      const maxConf = supporting.length <= 1 ? 0.4 : 1
+      const newConf = Math.max(
+        0,
+        Math.min(maxConf, existing.confidence + (upd.confidence_delta ?? 0.1)),
       )
       const update: Record<string, unknown> = {
         confidence: newConf,
@@ -406,13 +414,19 @@ export async function POST(request: NextRequest) {
     const activeGoals = (activeGoalsRaw ?? []) as Array<{ id: string; owner_id: string }>
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-    for (const g of activeGoals) {
-      fetch(`${baseUrl}/api/guardian/coach`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ member_id: g.owner_id, goal_id: g.id, session_id: session.id }),
-      }).catch((err) => console.error('[guardian/patterns] coach trigger failed:', err))
-    }
+    after(async () => {
+      await Promise.allSettled(
+        activeGoals.map((g) =>
+          fetch(`${baseUrl}/api/guardian/coach`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ member_id: g.owner_id, goal_id: g.id, session_id: session.id }),
+          }).catch((err) => {
+            console.error('[guardian/patterns] coach trigger failed:', err)
+          }),
+        ),
+      )
+    })
   }
 
   return NextResponse.json({

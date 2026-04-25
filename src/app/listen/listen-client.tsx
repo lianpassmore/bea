@@ -195,18 +195,18 @@ export default function ListenClient() {
       <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm mx-auto w-full animate-fade-in">
         <header className="mb-8 md:mb-12">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
-            Who is in the room?
+            Who&apos;s in the room?
           </h1>
           <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
-            I will listen quietly, and notice what I can.
+            I&apos;ll listen quietly, and notice what I can.
           </p>
         </header>
 
-        {!members && <p className="font-body text-bea-blue">Loading whānau…</p>}
+        {!members && <p className="font-body text-bea-blue">Loading family…</p>}
 
         {members && members.length === 0 && (
           <p className="font-body text-bea-clay">
-            No whānau on record yet. Add members first, then come back.
+            No family on record yet. Add members first, then come back.
           </p>
         )}
 
@@ -219,7 +219,7 @@ export default function ListenClient() {
             className="group inline-flex items-center gap-4 font-body text-base md:text-lg text-bea-charcoal transition-opacity hover:opacity-70 mb-8 md:mb-12"
           >
             <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-16" />
-            All whānau
+            Everyone&apos;s here
           </button>
         )}
 

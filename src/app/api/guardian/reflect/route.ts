@@ -3,6 +3,10 @@ import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 import { GUARDIAN_REFLECT_PROMPT } from '@/lib/prompts'
 
+// Reflect runs Opus 4.7, then a synchronous tikanga call, then polls for crisis
+// up to 30s. Default Hobby (10s) and Pro (~10s) caps are not enough.
+export const maxDuration = 90
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 type TranscriptRow = { role: string; message: string; time_in_call_secs: number }

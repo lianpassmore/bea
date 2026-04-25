@@ -52,7 +52,7 @@ export default function LoginPage() {
           Welcome.
         </h1>
         <p className="font-body text-base md:text-lg text-bea-olive leading-relaxed">
-          Please sign in to join your whānau.
+          Sign in to join your family.
         </p>
       </header>
 

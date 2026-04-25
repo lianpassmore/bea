@@ -170,7 +170,7 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
   const signOut = async () => {
     setSigningOut(true)
     await supabase.auth.signOut()
-    router.replace('/login')
+    router.replace('/')
     router.refresh()
   }
 

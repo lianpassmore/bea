@@ -22,7 +22,7 @@ const DAY_LABELS: Record<string, string> = {
 const MODE_META = {
   listen: {
     label: 'Listen quietly',
-    description: 'I will listen in the background without speaking.',
+    description: "I'll listen in the background without speaking.",
   },
   checkin: {
     label: 'Individual conversation',
@@ -233,7 +233,7 @@ export default function SchedulePage() {
       ) : schedules.length === 0 ? (
         <div className="border-t border-bea-charcoal/10 pt-6 md:pt-8">
           <p className="font-body text-base md:text-lg text-bea-olive leading-relaxed mb-6 md:mb-8">
-            I do not have any times set to be present yet.
+            I don&apos;t have any times set to be present yet.
           </p>
           <button
             onClick={() => setShowForm(true)}
@@ -301,7 +301,7 @@ export default function SchedulePage() {
       {schedules.length > 0 && (
         <div className="mt-12 md:mt-20 pt-6 md:pt-8 border-t border-bea-charcoal/10">
           <p className="font-body text-base md:text-lg text-bea-olive leading-relaxed mb-4">
-            If you are leaving a device in the room for me to listen, you can open the household view.
+            If you&apos;re leaving a device in the room for me to listen, you can open the household view.
           </p>
           <Link
             href="/household"

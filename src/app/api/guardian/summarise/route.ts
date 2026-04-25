@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 import { writeMemory } from '@/lib/memory'
@@ -98,21 +99,27 @@ export async function POST(request: NextRequest) {
 
   // Write the latest session summary to the member's memory store entry,
   // then kick off a background context refresh so the next check-in is instant.
+  // Wrapped in `after()` so the memory write + downstream context refresh
+  // survive the parent invocation being killed.
   if (member_id) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-    void writeMemory(
-      `/members/${member_id}/last_session.json`,
-      JSON.stringify({ ...summaryData, saved_at: new Date().toISOString() })
-    ).then(() => {
-      // Refresh the pre-computed context brief so Guardian 2 can serve it instantly next time
-      fetch(`${baseUrl}/api/guardian/context?memberId=${member_id}&refresh=true`)
-        .catch((err) => console.error('[memory] context refresh failed:', err))
+    after(async () => {
+      try {
+        await writeMemory(
+          `/members/${member_id}/last_session.json`,
+          JSON.stringify({ ...summaryData, saved_at: new Date().toISOString() }),
+        )
+        await fetch(`${baseUrl}/api/guardian/context?memberId=${member_id}&refresh=true`)
+      } catch (err) {
+        console.error('[memory] context refresh failed:', err)
+      }
     })
   }
 
   // ── Auto-trigger Coach for each active goal owned by this member ──────
-  // Fire-and-forget. The Coach reads the fresh summary + recent observations
-  // + patterns and decides what (if anything) Bea should raise next time.
+  // The Coach reads the fresh summary + recent observations + patterns and
+  // decides what (if anything) Bea should raise next time. Wrapped in
+  // `after()` so the trigger fetches survive Vercel killing this invocation.
   if (member_id && check_in_id) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
     const { data: activeGoalsRaw } = await supabase
@@ -122,12 +129,20 @@ export async function POST(request: NextRequest) {
       .eq('owner_id', member_id)
       .eq('status', 'active')
     const activeGoals = (activeGoalsRaw ?? []) as Array<{ id: string }>
-    for (const g of activeGoals) {
-      fetch(`${baseUrl}/api/guardian/coach`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ member_id, goal_id: g.id, check_in_id }),
-      }).catch((err) => console.error('[guardian/summarise] coach trigger failed:', err))
+    if (activeGoals.length > 0) {
+      after(async () => {
+        await Promise.allSettled(
+          activeGoals.map((g) =>
+            fetch(`${baseUrl}/api/guardian/coach`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ member_id, goal_id: g.id, check_in_id }),
+            }).catch((err) => {
+              console.error('[guardian/summarise] coach trigger failed:', err)
+            }),
+          ),
+        )
+      })
     }
   }
 

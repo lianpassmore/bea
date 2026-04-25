@@ -171,12 +171,12 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
 
         <header className="mb-10 md:mb-16">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
-            {isFamilyMode ? 'Kia ora family.' : `Kia ora, ${authedMember.name}.`}
+            {isFamilyMode ? 'Hello, family.' : `Hello, ${authedMember.name}.`}
           </h1>
           <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
             {isFamilyMode
-              ? 'I am ready for your check-in when you are.'
-              : "Hello, I'm ready for your individual check-in when you are."}
+              ? "I'm ready for your check-in when you are."
+              : "I'm ready for your individual check-in when you are."}
           </p>
         </header>
 
@@ -212,7 +212,7 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
 
         {loadError && (
           <p className="font-body text-base md:text-lg text-bea-clay">
-            I cannot seem to find your whānau right now. Please wait a moment.
+            I can't seem to find your family right now. Please wait a moment.
           </p>
         )}
 

@@ -3,6 +3,9 @@ import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 import { GUARDIAN_INSIGHT_PROMPT } from '@/lib/prompts'
 
+// Insight runs Opus 4.7 then chains tikanga + silence + perspective — needs room.
+export const maxDuration = 120
+
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const CACHE_TTL_MS = 48 * 60 * 60 * 1000 // 48 hours — reuse perspective memos younger than this

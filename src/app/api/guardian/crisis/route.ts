@@ -1,3 +1,6 @@
+// Opus 4.7 with 4k extended thinking — the deepest call in the system.
+export const maxDuration = 120
+
 /**
  * Guardian 10 — Crisis
  *

@@ -73,10 +73,10 @@ export default function TimelineClient({
     <div className="flex flex-col flex-1 pt-12 pb-12 md:pt-20 md:pb-20 max-w-xl mx-auto w-full animate-fade-in">
       <header className="mb-10 md:mb-16">
         <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
-          What we have shared, {memberName}.
+          What we&apos;ve shared, {memberName}.
         </h1>
         <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
-          A few words after each time we have spoken.
+          A few words after each time we&apos;ve spoken.
         </p>
       </header>
 
@@ -114,7 +114,7 @@ function NotesSection({ notes, nowMs }: { notes: TimelineEvent[]; nowMs: number 
       {notes.length === 0 ? (
         <div className="border-t border-bea-charcoal/10 pt-6 md:pt-8">
           <p className="font-body text-bea-blue text-base md:text-lg leading-relaxed">
-            We have not spoken yet. When we do, I will leave a few words here.
+            We haven&apos;t spoken yet. When we do, I&apos;ll leave a few words here.
           </p>
           <Link
             href="/check-in"
@@ -209,7 +209,7 @@ function TimelineSection({ events, nowMs }: { events: TimelineEvent[]; nowMs: nu
       </button>
 
       <p className="font-body text-sm md:text-base text-bea-olive mt-3 leading-relaxed">
-        Every time we have spoken, and every time I have sat with your whānau.
+        A record of every time we&apos;ve spoken, and every time I&apos;ve listened.
       </p>
 
       {open && (
@@ -328,7 +328,7 @@ function TimelineRow({
           <p className="font-body text-bea-blue/80 italic text-sm md:text-base">
             {event.kind === 'individual'
               ? 'A quiet conversation. I have not yet written about this one.'
-              : 'I sat with your whānau.'}
+              : 'I sat with your family.'}
           </p>
         )}
       </button>
@@ -356,7 +356,7 @@ function TimelineRow({
           )}
 
           {event.kind !== 'individual' && event.family_summary && (
-            <DetailNote label="The whānau, together" body={event.family_summary} />
+            <DetailNote label="The family, together" body={event.family_summary} />
           )}
 
           {event.kind !== 'individual' && event.family_themes.length > 0 && (

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 import { GUARDIAN_GROUP_PROMPT } from '@/lib/prompts'
+
+// Opus 4.7 with high effort + adaptive thinking + 16k tokens — long-running.
+export const maxDuration = 120
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -260,13 +264,20 @@ export async function POST(request: NextRequest) {
   // Fire the pattern detection agent — runs after every session, reads the
   // attributed transcript + active goals + recent patterns, writes
   // session_insights, observations, pattern updates, and milestones.
-  // Fire-and-forget; the user has already seen finalize return.
+  // Wrapped in `after()` so the trigger fetch survives Vercel killing the
+  // parent invocation.
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
-  fetch(`${baseUrl}/api/guardian/patterns`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ session_id: session.id }),
-  }).catch((err) => console.error('[guardian/group] pattern agent trigger failed:', err))
+  after(async () => {
+    try {
+      await fetch(`${baseUrl}/api/guardian/patterns`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: session.id }),
+      })
+    } catch (err) {
+      console.error('[guardian/group] pattern agent trigger failed:', err)
+    }
+  })
 
   return NextResponse.json({
     ok: true,

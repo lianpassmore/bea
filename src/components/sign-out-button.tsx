@@ -12,7 +12,7 @@ export default function SignOutButton() {
   async function handleSignOut() {
     setLoading(true)
     await supabase.auth.signOut()
-    router.replace('/login')
+    router.replace('/')
     router.refresh()
   }
 

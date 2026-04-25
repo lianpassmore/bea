@@ -36,10 +36,10 @@ export default async function WelcomePage() {
         {/* Body is split to create pacing. Charcoal for the observation, Blue for the space. */}
         <div className="space-y-4 md:space-y-6">
           <p className="font-body text-base md:text-lg text-bea-charcoal leading-relaxed">
-            I can see you have arrived, but I don’t know which whānau you belong to yet.
+            I can see you’ve arrived, but I don’t know which family you belong to yet.
           </p>
           <p className="font-body text-base md:text-lg text-bea-blue leading-relaxed">
-            When the person who invited you makes the connection on their end, we can begin. There is no rush.
+            When the person who invited you makes the connection on their end, we can begin. There’s no rush.
           </p>
         </div>
 

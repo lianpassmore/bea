@@ -1,3 +1,6 @@
+// Opus 4.7 with xhigh effort + adaptive thinking + 64k tokens — long-running.
+export const maxDuration = 300
+
 /**
  * Guardian — Coach
  *
