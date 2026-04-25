@@ -61,10 +61,7 @@ export default function TimelineClient({
   const notes = useMemo(
     () =>
       events.filter(
-        (e) =>
-          e.kind === 'individual' &&
-          e.reflection !== null &&
-          e.reflection.trim().length > 0
+        (e) => e.reflection !== null && e.reflection.trim().length > 0
       ),
     [events]
   )
