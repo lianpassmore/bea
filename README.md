@@ -34,55 +34,27 @@ Families carry enormous invisible weight — emotional labour distributed uneven
 
 ---
 
-## The Guardian Architecture
+## The Architecture
 
-Bea's voice is powered by **ElevenLabs**. Her intelligence runs on **Anthropic Claude Opus 4.7** — five guardian agents operating silently beneath every conversation.
+Bea's voice is powered by **ElevenLabs** (Sonnet 4.6). Her between-sessions intelligence runs on **Anthropic Claude Opus 4.7** with adaptive thinking — twelve reasoning agents operating silently beneath every conversation. Three of them do work a smaller model would visibly fail at; the rest are structured-output workers that benefit from Opus's consistency.
 
-```
-                    ┌─────────────────────┐
-                    │   ElevenLabs Agent  │  ← speaks to the family
-                    │   (voice + dialogue) │
-                    └────────┬────────────┘
-                             │ dynamicVariables
-                    ┌────────▼────────────┐
-                    │   Guardian 2        │  ← runs BEFORE each session
-                    │   Context Curator   │     synthesises recent history
-                    └─────────────────────┘
+### The three Opus 4.7 reasoning tasks
 
-         Session ends → transcript saved → Guardians fire in parallel:
+These are the agents that earn Opus 4.7. Each runs with adaptive thinking, summarized display, and explicit `effort`. Their full extended-thinking traces are persisted alongside their structured output.
 
-    ┌──────────────────┐  ┌───────────────────┐  ┌──────────────────┐
-    │   Guardian 1     │  │   Guardian 3       │  │   Guardian 4     │
-    │  Summary Oracle  │  │  Wellbeing Monitor │  │ Reflection Writer│
-    │  (Opus 4.7 +     │  │  (Opus 4.7 +       │  │  (Opus 4.7,      │
-    │   thinking)      │  │   thinking)        │  │   no thinking)   │
-    └──────────────────┘  └───────────────────┘  └──────────────────┘
+1. **Group session reasoning** — [`/api/guardian/group`](src/app/api/guardian/group/route.ts) — `effort: 'high'`. Multi-speaker diarized transcripts → voice attribution + per-member summaries + family dynamics. The most cognitively demanding reading task in the stack: hold ten minutes of overlapping conversation, attribute every turn, and produce a coherent per-member read.
+2. **Pattern detection** — [`/api/guardian/patterns`](src/app/api/guardian/patterns/route.ts) — `effort: 'high'`. Cross-session causal reasoning: distinguish reinforcement from new patterns, observe metrics against active goals, evolve `confidence` over time.
+3. **The Coach** — [`/api/guardian/coach`](src/app/api/guardian/coach/route.ts) — `effort: 'xhigh'`. Per (member, active goal), reads observations + patterns + transcripts + prior reflections + prior coach decisions, and answers a single ethical-judgement question: *"What — if anything — should Bea bring to the next conversation?"* The honest answer is often "nothing yet." The agent emits the draft sentence Bea might say, the alternatives it considered and rejected (`considered_and_rejected`), and the listening priority that flows back into ElevenLabs as a dynamic variable on the next session.
 
-                    On demand (guardian panel):
-                    ┌─────────────────────┐
-                    │   Guardian 5        │
-                    │  Family Insight     │  ← reads across all sessions
-                    │  (Opus 4.7 +        │     produces family pattern report
-                    │   extended thinking)│
-                    └─────────────────────┘
-```
+The Coach's output is wired into [`/api/guardian/context`](src/app/api/guardian/context/route.ts), which means **the Coach decides what Bea pays attention to in the next conversation**.
 
-### The Five Guardians
+### The audit surface
 
-**Guardian 1 — Summary Oracle**  
-After each session, reads the transcript and produces: an emotional summary, themes, the person's current tone, a family pulse, and a gentle direction for future listening. Uses extended thinking (`budget_tokens: 5000`).
+Every reasoning trace lives in the database. The admin page at [`/dev/reasoning`](src/app/dev/reasoning/page.tsx) renders the full agent chain for any session — input, structured output, extended-thinking trace, token counts, and (for the Coach) the alternatives the agent considered and rejected. This is the Human Proxy Theory in working code: the named humans behind Bea (Lian, Lee, Karaitiana) can review every judgement call she makes.
 
-**Guardian 2 — Context Curator**  
-Before each session, synthesises the last 5 check-ins into a context brief for Bea: who this person is right now, what they've been carrying, what threads are open, where to listen. Awaited before ElevenLabs connects.
+### The other nine agents
 
-**Guardian 3 — Wellbeing Monitor**  
-After each session, reads for signals of distress — not to diagnose, but to notice. Returns a level (green / amber / red) and a brief warm observation. Extended thinking enabled.
-
-**Guardian 4 — Reflection Writer**  
-After each session, writes 3–5 sentences as if Bea herself were leaving a quiet note in her journal — addressed to the person, not about them. Intentionally no extended thinking: reflection should feel immediate.
-
-**Guardian 5 — Family Insight**  
-On demand, reads across all sessions from all family members and produces a Family Pattern Report: collective emotional climate, what's thriving, what's under pressure, recurring patterns. Extended thinking (`budget_tokens: 7000`).
+Summarise, Wellbeing, Crisis, Reflect, Tikanga, Silence Gate, Perspective, Absence, Insight, Context. Each does one job; each has a single sentence's worth of question it answers. See [`src/lib/prompts.ts`](src/lib/prompts.ts) for every system prompt and [`src/app/api/guardian/`](src/app/api/guardian/) for the routes.
 
 ---
 
@@ -130,7 +102,7 @@ Text-first design excludes. Voice-first design opens.
 |---|---|
 | Framework | Next.js 16 (App Router), React 19, TypeScript |
 | Voice & conversation | ElevenLabs (`@elevenlabs/react`) |
-| Intelligence layer | Anthropic Claude Opus 4.7 with extended thinking |
+| Intelligence layer | Anthropic Claude Opus 4.7 with adaptive thinking + `effort` |
 | Database | Supabase (PostgreSQL) |
 | Styling | Tailwind CSS v4, DM Serif Display, Lora, Inter |
 | Icons | lucide-react |
@@ -179,18 +151,30 @@ src/app/
 ├── dashboard/            # Personal journal + family report
 ├── schedule/             # Manage scheduled sessions
 ├── household/            # Always-on ambient device mode
-└── api/
-    ├── check-ins/        # Save transcripts, trigger guardians
-    ├── guardian/
-    │   ├── summarise/    # Guardian 1 — post-session summary
-    │   ├── context/      # Guardian 2 — pre-session context brief
-    │   ├── wellbeing/    # Guardian 3 — wellbeing assessment
-    │   ├── reflect/      # Guardian 4 — Bea's reflection letter
-    │   └── insight/      # Guardian 5 — family pattern report
-    └── schedules/        # Schedule CRUD
+├── api/
+│   ├── check-ins/        # Save transcripts, trigger agents
+│   ├── listen/finalize/  # Group session post-processing
+│   └── guardian/
+│       ├── group/        # Opus 4.7 — multi-speaker reasoning ★
+│       ├── patterns/     # Opus 4.7 — cross-session pattern detection ★
+│       ├── coach/        # Opus 4.7 — per-goal coaching judgement ★
+│       ├── context/      # Pre-session brief; merges Coach's listening_priority
+│       ├── summarise/    # 1:1 check-in summary
+│       ├── wellbeing/    # Distress signals
+│       ├── crisis/       # High-stakes escalation
+│       ├── reflect/      # Bea's reflection letter
+│       ├── tikanga/      # Cultural-pillars review
+│       ├── silence/      # Surface or hold the reflection
+│       ├── perspective/  # Internal per-member memos
+│       ├── absence/      # What's not being said
+│       └── insight/      # Family-wide pulse
+└── dev/reasoning/        # Admin audit surface — full agent chain per session
 
 src/lib/
-└── prompts.ts            # All five guardian prompts + Bea's system prompt
+└── prompts.ts            # All system prompts
+
+docs/
+└── coaching-philosophy.md  # Takitaki mai foundation, He Karetao adjustment
 ```
 
 ---

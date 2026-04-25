@@ -82,8 +82,10 @@ group sessions, Speaker Recognition for member voice ID.
 | `/schedule` | [src/app/schedule/](src/app/schedule/) | Rhythm management — recurring listen / check-in / group prompts. |
 | `/setup` | [src/app/setup/](src/app/setup/) | New-member onboarding: consent, name, 30-second voice enrollment to Azure. |
 | `/welcome`, `/login` | [src/app/welcome/](src/app/welcome/), [src/app/login/](src/app/login/) | OAuth/magic-link sign-in and post-auth member-link gating. |
-| `/` (home) | [src/app/page.tsx](src/app/page.tsx) | Dashboard. Shows unseen Guardian-10 crisis notifications, recent reflections, family pulse. |
-| PWA push | [src/lib/web-push.ts](src/lib/web-push.ts) | Browser notifications for advance/start/end of scheduled sessions and crisis alerts. |
+| `/` (home) | [src/app/page.tsx](src/app/page.tsx) | Dashboard. Shows a daily affirmation line ([src/lib/daily-lines.ts](src/lib/daily-lines.ts)), unseen Guardian-10 crisis notifications, recent reflections, family pulse. |
+| `/audit/[goalId]` | [src/app/audit/[goalId]/](src/app/audit/[goalId]/) | Per-goal audit surface. Renders observations, sessions, and every Coach run for the goal — including the extended-thinking trace and the alternative drafts the Coach considered and rejected. The Human Proxy Theory in working code. |
+| `/dev/reasoning` | [src/app/dev/reasoning/](src/app/dev/reasoning/) | Developer-only reasoning audit. Side-by-side timeline of every agent that ran on a session (1:1, group, or family insight), with each agent's structured output, thinking trace, and override notes (tikanga rewrite, crisis replacement, silence decision). |
+| PWA push | [src/lib/web-push.ts](src/lib/web-push.ts) | Browser notifications for advance/start/end of scheduled sessions and crisis alerts. Subscribe / unsubscribe / prefs are handled via server actions in [src/app/actions/](src/app/actions/). |
 
 ---
 
@@ -98,11 +100,14 @@ User taps Begin
   Voice identify (Azure Speaker Recognition) → member_id
       │
       ▼
-  GET /api/guardian/context?memberId=...    ← reads recent sessions + memory store
+  GET /api/guardian/context?memberId=...    ← reads memory cache + most recent coach_read
       │      returns { individual_summary, family_summary,
       │                emotional_tone, open_threads,
       │                listening_direction, listening_priority,
       │                last_checkin_date }
+      │      listening_priority + listening_direction are overridden by the
+      │      most recent Coach run (last 14 days). That's how the Coach's
+      │      between-session reasoning shapes Bea's next conversation.
       ▼
   conversation.startSession({
       agentId, dynamicVariables: {
@@ -122,6 +127,8 @@ User taps Begin
   POST /api/check-ins   ← saves transcript, returns check_in_id, fires guardians
       │
       ├── /api/guardian/summarise     (G1: individual_summary, themes, focus)
+      │       └── for each active goal owned by this member:
+      │             /api/guardian/coach   (Opus 4.7 extended-thinking; writes coach_reads)
       ├── /api/guardian/wellbeing     (G3: green/amber/red + signals)
       ├── /api/guardian/reflect       (G4: 3-5 sentence Bea reflection)
       ├── /api/guardian/absence       (G9: what went quiet — internal only)
@@ -132,10 +139,12 @@ User taps Begin
               └── G10 may write crisis_notifications + replace reflection
 ```
 
-For passive household + guided family sessions, the lifecycle is similar but
-runs through `/api/listen/finalize` → `/api/guardian/group` → then
-**`/api/guardian/patterns`** (the new pattern detection agent), which produces
-the coaching-loop outputs (observations, patterns, milestones).
+For passive household + guided family sessions, the lifecycle runs through
+`/api/listen/finalize` → `/api/guardian/group` → **`/api/guardian/patterns`**
+(per-session insight + cross-session pattern reinforcement), which then
+fans out one **`/api/guardian/coach`** call per (member × active goal) it
+encountered. Coach output is what Context will surface to the next session
+via `listening_priority` / `listening_direction`.
 
 ---
 
@@ -156,7 +165,7 @@ by `fetch(...)` after the user has already received their response.
 | 7 | **Tikanga** | `/api/guardian/tikanga` | Validates reflection against ten pou; may rewrite. Original preserved in `*_original` columns. Hidden from voice, does affect what gets stored. |
 | 6 | **Silence** | `/api/guardian/silence` | surface / wait / never. Controls whether reflection appears on the dashboard. |
 | 9 | **Absence** | `/api/guardian/absence` | What went quiet vs. prior themes. Internal only — never user-facing. Feeds G2/G5/G6. |
-| 10 | **Crisis** | `/api/guardian/crisis` | crisis_level (watchful/concerned/urgent), in-session response, contact briefing. Creates rows in `crisis_notifications`. Only fires if G3 returned amber/red or transcript trips signals. |
+| 10 | **Crisis** | `/api/guardian/crisis` | crisis_level (watchful/concerned/urgent), in-session response, contact briefing. Creates rows in `crisis_notifications`. Only fires if G3 returned amber/red or transcript trips signals. Extended-thinking trace stored in `check_ins.crisis_agent_thinking` for audit. |
 
 ### 5b. Cross-session / family-level
 
@@ -170,7 +179,18 @@ by `fetch(...)` after the user has already received their response.
 | # | Agent | Route | Output |
 |---|---|---|---|
 | 11 | **Group** | `/api/guardian/group` | Reads diarized transcript + roster → speaker_map (which speaker # is which member, including is_bea), family_summary/themes/tone/pulse, per_member_summaries[]. Writes to `listening_sessions` and `listening_member_summaries`. After it completes, fires the pattern detection agent. |
-| — | **Pattern Detection** | `/api/guardian/patterns` | Per-session insight + cross-session pattern reinforcement. Writes `session_insights`, `observations` (matched to active goals' `metric_key`), `patterns` (create or reinforce — single sessions can never create high-confidence patterns), and auto-awards session-count milestones. |
+| — | **Pattern Detection** | `/api/guardian/patterns` | Per-session insight + cross-session pattern reinforcement. Writes `session_insights`, `observations` (matched to active goals' `metric_key`), `patterns` (create or reinforce — single sessions can never create high-confidence patterns), and auto-awards session-count milestones. After writing, fans out to the Coach agent per (member × active goal). |
+
+### 5d. Coach (Opus 4.7 extended-thinking, per goal)
+
+| # | Agent | Route | Output |
+|---|---|---|---|
+| — | **Coach** | `/api/guardian/coach` | Per (member × active goal). Reads the goal, its observations (last 30 days), open patterns touching the member (last 30 days), recent 1:1 + group summaries (last 14 days), and prior coach reads (last 14 days). Produces `coach_read` (progress, user_felt_experience, change/sustain talk), `next_session_guidance` (always populated `listening_priority` + `listening_direction`; nullable `offer_to_raise` and `refocus_question` drafts in Bea's voice), and `considered_and_rejected[]` — the alternative drafts the agent chose against. Persisted to `coach_reads` with the full extended-thinking trace. Uses `claude-opus-4-7` with `thinking: { type: 'adaptive', display: 'summarized' }` and `output_config: { effort: 'xhigh' }`. |
+
+The Coach is the fourth Opus 4.7 reasoning task (alongside Pattern Detection,
+Family Insight, Crisis). It does not speak to the user — it shapes what Bea
+listens for next time. The audit surfaces (`/audit/[goalId]`, `/dev/reasoning`)
+exist so a human reviewer can see the judgement calls it made.
 
 ---
 
@@ -205,10 +225,10 @@ All tables live in Supabase, all use `uuid` primary keys, `created_at` is
 (server-only access via the service-role key).
 
 ### Identity & consent
-- **`members`** — household roster. `id`, `name`, `role` (`primary` | `family`), `email`, `auth_user_id` (FK to `auth.users`), `azure_profile_id`, `voice_enrolled`, `consent_given_at`, `consent_withdrawn_at`, `status` (`active` | `withdrawn`), `avatar_url`.
+- **`members`** — household roster. `id`, `name`, `role` (`primary` | `family`), `email`, `auth_user_id` (FK to `auth.users`), `azure_profile_id`, `voice_enrolled`, `consent_given_at`, `consent_withdrawn_at`, `status` (`active` | `held` | `withdrawn`), `avatar_url`. `held` covers members in the household whose consent has not been recorded (typically minors) — they are attributed in group transcripts but excluded from per-member summaries and reflections.
 
 ### Sessions
-- **`check_ins`** — 1:1 voice sessions. Holds `transcript`, `summary`, `themes`, `emotional_tone`, `family_pulse`, `suggested_focus`, `wellbeing_level`, `signals`, `reflection`, `reflection_original`, all crisis_* fields, `member_id`, `agent_id`, `is_guest`.
+- **`check_ins`** — 1:1 voice sessions. Holds `transcript`, `summary`, `themes`, `emotional_tone`, `family_pulse`, `suggested_focus`, `wellbeing_level`, `signals`, `reflection`, `reflection_original`, all crisis_* fields including `crisis_agent_thinking` (G10's extended-thinking trace), `guardian_thinking` (G1's trace), `member_id`, `agent_id`, `is_guest`.
 - **`listening_sessions`** — group sessions (passive or guided). Holds `roster`, `raw_transcript`, `attributed_transcript`, `speaker_map`, `family_summary/themes/tone/pulse`, `kind` (`passive` | `guided`), `eleven_labs_transcript` (only for guided), `status` (`pending` | `transcribed` | `attributed` | `failed`).
 - **`listening_member_summaries`** — per-member outputs from a group session: `individual_summary`, `themes`, `emotional_tone`, `suggested_focus`, `reflection`. Unique on (session_id, member_id).
 
@@ -218,6 +238,7 @@ All tables live in Supabase, all use `uuid` primary keys, `created_at` is
 - **`session_insights`** — one row per `listening_session`. `per_member` jsonb (tone, notable_moments, observed_metrics by member), `whanau` jsonb, `agent_thinking`. The pattern agent's structured output for that session.
 - **`patterns`** — cross-session corroborated observations. `scope`, `subject_id`, `kind`, `severity`, `confidence` (0..1), `supporting_session_ids[]`, `status` (`new` | `discussed` | `dismissed` | `resolved`), `first_seen_at`, `last_seen_at`. Single sessions cap confidence at 0.4 — patterns must be reinforced.
 - **`milestones`** — `owner_type`, `owner_id`, `kind`, `title`, `payload`, `achieved_at`. Unique on (owner, kind) to enforce one-time awards.
+- **`coach_reads`** — one row per Coach agent run. `session_id` or `check_in_id` (one of the two is set), `member_id`, `decision` (`raise` | `wait` | `note`), `response` (the line Bea would say if `decision='raise'`), `rationale`, `listening_priority`, `listening_direction`, `agent_thinking` (full extended-thinking trace), `considered_and_rejected` jsonb (alternative drafts and why they were rejected). Read by `/api/guardian/context` to override the next session's listening priority. Indexed on `session_id`, `check_in_id`, and `member_id`.
 
 ### Safety & operations
 - **`crisis_notifications`** — Guardian-10 alerts to designated contacts. `check_in_id`, `affected_member_id`, `contact_member_id`, `crisis_level`, `briefing`, `seen_at`.
@@ -245,7 +266,9 @@ Grouped by purpose. All routes are Next.js 16 server route handlers.
 - `POST /api/voice/identify` — check-in audio → Azure identify → returns matched `member_id`, name, confidence (threshold 0.7).
 
 ### Guardian agents
-See [§5](#5-the-agents-claude-calls). All under `/api/guardian/*`.
+See [§5](#5-the-agents-claude-calls). All under `/api/guardian/*`. The Coach
+agent (`/api/guardian/coach`) is included here even though it is not numbered
+G1–G11 — it is the fourth Opus 4.7 reasoning task in the system.
 
 ### Coaching loop CRUD
 - `GET/POST /api/goals`, `GET/PATCH/DELETE /api/goals/[id]`
@@ -265,6 +288,12 @@ See [§6](#6-the-voice-tools-beas-hands). All under `/api/bea-tools/*`.
 - `GET /api/reflections` — merged timeline of 1:1 + group reflections.
 - `GET /api/memory/init` — one-shot creates the Anthropic memory store; copy the returned `store_id` into `ANTHROPIC_MEMORY_STORE_ID`.
 - `POST /api/chat` — text-mode chat using the same `BEA_SYSTEM_PROMPT`. Used by web chat surfaces; not the voice path.
+
+### Server actions
+Live under [src/app/actions/](src/app/actions/). These run as Next.js server
+actions, not REST endpoints.
+- `subscribeUser` / `unsubscribeUser` ([push.ts](src/app/actions/push.ts)) — manage Web Push subscriptions, write to `push_subscriptions`.
+- `updatePrefs` / `getPrefs` ([notification-prefs.ts](src/app/actions/notification-prefs.ts)) — toggle which notification categories a subscription receives.
 
 ---
 
@@ -337,6 +366,17 @@ two passes: (1) per-session observations against any active goal whose
 `metric_key` matches, (2) cross-session pattern updates that either reinforce
 an existing pattern or create a new low-confidence candidate (≤ 0.4).
 
+**Coach closes the loop.** After every session, the Coach agent runs once per
+(member × active goal): from `/api/guardian/summarise` for 1:1s, and from
+`/api/guardian/patterns` for group/passive sessions. Coach's
+`listening_priority` and `listening_direction` are persisted to `coach_reads`,
+and `/api/guardian/context` reads the most recent row (last 14 days) and
+overrides the synthesised brief with it. The Coach's between-session reasoning
+is therefore what shapes how Bea listens at the start of the next conversation
+— not directly what she says, but what she's tuned for. Drafts she might raise
+(`offer_to_raise`, `refocus_question`) and the alternatives she rejected
+(`considered_and_rejected[]`) are kept for human review.
+
 **Drafts require explicit consent.** Any goal Bea proposes lands in
 `status='draft'`. Tracking only begins when the user explicitly confirms in
 voice and Bea calls `confirm_goal`.
@@ -355,22 +395,47 @@ Group sessions attribute non-consented members in the speaker map (so
 transcripts read correctly) but do not generate per-member summaries for them.
 
 **Memory is per-household, not per-member.** One Anthropic memory store id is
-shared across the family. Guardian 1 writes per-member context paths; Guardian
-2 reads them at session start.
+shared across the family. Guardian 1 writes per-member paths
+(`/members/{id}/last_session.json`, `/members/{id}/context.json`) right after
+saving its summary; Guardian 2 reads `/members/{id}/context.json` as a hot
+cache at the start of the next session, then merges in the most recent
+`coach_reads` row before returning. Read/write helpers live in
+[src/lib/memory.ts](src/lib/memory.ts).
+
+**Audit is a first-class surface.** Every agent that uses extended thinking
+persists its trace alongside its structured output (`guardian_thinking`,
+`crisis_agent_thinking`, `agent_thinking` on `coach_reads` and
+`session_insights`). The Coach also persists its rejected drafts. Two
+audit surfaces consume this: `/audit/[goalId]` for a single goal's history,
+and `/dev/reasoning` for a full per-session agent timeline.
 
 ---
 
 ## 12. What is not done yet
 
-- The pattern detection agent and coaching loop tables are deployed and live,
-  but no goals exist in production yet — the system has nothing to track until
-  someone says "I want to..." in a session and Bea drafts a goal.
+- The Coach prompt is at v0.1 and has not yet been tuned against real
+  sessions. Lian + Lee + Karaitiana are the cultural-authority loop; their
+  review is pending.
+- The pattern detection + coaching loop are deployed and live, but no goals
+  exist in production yet — the system has nothing to track until someone
+  says "I want to..." in a session and Bea drafts a goal.
+- The Coach's `offer_to_raise` and `refocus_question` drafts are persisted
+  to `coach_reads.response`, but Bea's voice agent does not yet read them
+  back at session start (only `listening_priority` / `listening_direction`
+  flow through). Wiring the actual draft into the dynamic variables is the
+  next step in closing the speaking side of the loop.
 - Push notifications work but are not yet wired to most automatic triggers
   (currently invoked ad-hoc from `/api/notifications/broadcast`).
-- The Anthropic memory store integration is one-way at the moment (Guardians 1
-  and 2 use it; the new pattern agent does not yet write to it).
+- The Anthropic memory store is used by Guardians 1 + 2 (write/read of
+  per-member context). The pattern and coach agents persist their
+  thinking traces to Postgres rather than the memory store; whether to
+  surface them via memory paths as well is an open design question.
 - Family-mode and passive-listen sessions still run through `BEA_SYSTEM_PROMPT`
   even though her tools assume a single speaker. The prompt instructs her to
   use `fetch_family_context` for roster lookups when `user_member_id` is empty,
   which is enough for the demo, but a dedicated family-mode prompt would be
   cleaner long-term.
+- The Alexa handler at [src/app/api/alexa/handler/route.ts](src/app/api/alexa/handler/route.ts)
+  is dormant. Skill registration could not be completed in time for the
+  hackathon demo, so the route is parked — no code outside it depends on
+  it. Removing or restoring it is a one-step decision.

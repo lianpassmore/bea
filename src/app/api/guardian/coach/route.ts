@@ -385,11 +385,8 @@ export async function POST(request: NextRequest) {
       rationale = refocus.reasoning
     }
   } else if (guidance?.listening_priority || guidance?.listening_direction) {
-    // Coach has a listening direction even when not raising — record as 'note'.
+    // Coach is holding but still produced listening direction — record as 'note'.
     decision = 'note'
-    rationale = [guidance?.listening_priority, guidance?.listening_direction]
-      .filter((s): s is string => !!s)
-      .join(' / ')
   }
 
   // Prefer the agent's own narrative thinking trace; fall back to the model's
@@ -406,6 +403,8 @@ export async function POST(request: NextRequest) {
       decision,
       response,
       rationale,
+      listening_priority: guidance?.listening_priority ?? null,
+      listening_direction: guidance?.listening_direction ?? null,
       agent_thinking: agentThinking,
       considered_and_rejected: output.considered_and_rejected ?? [],
     })

@@ -49,6 +49,7 @@ type ContextOutput = {
   family_summary: string
   emotional_tone: string
   open_threads: string
+  listening_priority: string
   listening_direction: string
 }
 
@@ -58,7 +59,32 @@ const FALLBACK: ContextOutput = {
   family_summary: 'No family sessions on record yet.',
   emotional_tone: 'unknown',
   open_threads: 'None yet — this is the first session.',
+  listening_priority: 'Listen for what this person most needs to be heard on, without having to ask.',
   listening_direction: 'Listen with fresh eyes. There is no prior context to shape this.',
+}
+
+// Merge the most recent Coach decision (last 14 days) over the synthesized
+// listening_priority / listening_direction. Coach output decides what Bea pays
+// attention to in the next session — context's own synthesis is a fallback.
+async function applyCoachOverride(
+  brief: ContextOutput,
+  memberId: string,
+): Promise<ContextOutput> {
+  const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+  const { data } = await supabase
+    .from('coach_reads')
+    .select('listening_priority, listening_direction, created_at')
+    .eq('member_id', memberId)
+    .gte('created_at', since)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (!data) return brief
+  return {
+    ...brief,
+    listening_priority: data.listening_priority || brief.listening_priority,
+    listening_direction: data.listening_direction || brief.listening_direction,
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -73,7 +99,9 @@ export async function GET(request: NextRequest) {
     const cached = await readMemory(`/members/${memberId}/context.json`)
     if (cached) {
       try {
-        return NextResponse.json(JSON.parse(cached) as ContextOutput)
+        const brief = JSON.parse(cached) as ContextOutput
+        const merged = await applyCoachOverride(brief, memberId)
+        return NextResponse.json(merged)
       } catch {
         // Corrupted entry — fall through to live synthesis
       }
@@ -173,14 +201,17 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error('Guardian context synthesis failed:', err)
     const s = mergedHistory[0]
-    return NextResponse.json({
+    const fallbackBrief: ContextOutput = {
       last_checkin_date,
       individual_summary: s?.individual_summary ?? FALLBACK.individual_summary,
       family_summary: s?.family_pulse ?? FALLBACK.family_summary,
       emotional_tone: s?.emotional_tone ?? FALLBACK.emotional_tone,
       open_threads: s?.suggested_focus ?? FALLBACK.open_threads,
+      listening_priority: FALLBACK.listening_priority,
       listening_direction: FALLBACK.listening_direction,
-    })
+    }
+    const merged = memberId ? await applyCoachOverride(fallbackBrief, memberId) : fallbackBrief
+    return NextResponse.json(merged)
   }
 
   const result: ContextOutput = { last_checkin_date, ...contextData }
@@ -190,5 +221,7 @@ export async function GET(request: NextRequest) {
     void writeMemory(`/members/${memberId}/context.json`, JSON.stringify(result))
   }
 
-  return NextResponse.json(result)
+  // Merge the latest Coach output on top of the fresh synthesis
+  const merged = memberId ? await applyCoachOverride(result, memberId) : result
+  return NextResponse.json(merged)
 }
