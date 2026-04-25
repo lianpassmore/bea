@@ -47,6 +47,7 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
   const [open, setOpen] = useState(false)
   const [photo, setPhoto] = useState<string | null>(avatarUrl)
   const [uploading, setUploading] = useState(false)
+  const [photoMenuOpen, setPhotoMenuOpen] = useState(false)
   const [notifs, setNotifs] = useState(initialNotifs)
   const [signingOut, setSigningOut] = useState(false)
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null)
@@ -182,7 +183,7 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
         type="button"
         onClick={() => setOpen(true)}
         aria-label={hasUnread ? `Profile, ${notifs.length} new` : 'Profile'}
-        className="relative inline-flex items-center justify-center w-10 h-10 rounded-full overflow-hidden bg-bea-amber/15 text-bea-charcoal hover:opacity-80 transition-opacity duration-300"
+        className="relative inline-flex items-center justify-center w-12 h-12 rounded-full overflow-hidden bg-bea-amber/15 text-bea-charcoal ring-1 ring-bea-olive hover:opacity-80 transition-opacity duration-300"
       >
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -207,13 +208,10 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
           <aside
             role="dialog"
             aria-label="Profile"
-            className="absolute top-0 right-0 h-full w-full max-w-sm bg-bea-milk shadow-2xl overflow-y-auto"
+            className="absolute top-0 right-0 h-full w-full max-w-sm bg-bea-milk shadow-2xl flex flex-col"
           >
-            <div className="flex flex-col gap-10 px-6 py-8">
-              <div className="flex items-start justify-between">
-                <h2 className="font-serif text-2xl text-bea-charcoal">
-                  {memberName ?? 'Your space'}
-                </h2>
+            <div className="flex-1 overflow-y-auto flex flex-col gap-10 px-6 py-8">
+              <div className="flex justify-end -mb-4">
                 <button
                   onClick={() => setOpen(false)}
                   aria-label="Close"
@@ -224,7 +222,7 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
               </div>
 
               <section className="flex items-center gap-5">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden bg-bea-amber/15 flex items-center justify-center">
+                <div className="relative w-20 h-20 rounded-full overflow-hidden bg-bea-amber/15 flex items-center justify-center shrink-0 ring-1 ring-bea-olive">
                   {photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} alt={memberName ?? 'Profile'} className="w-full h-full object-cover" />
@@ -232,7 +230,10 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
                     <span className="font-serif text-2xl text-bea-charcoal">{initials}</span>
                   )}
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1.5 min-w-0">
+                  <h2 className="font-body text-3xl text-bea-charcoal leading-tight truncate">
+                    {memberName ?? 'Your space'}
+                  </h2>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -244,26 +245,57 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
                       e.target.value = ''
                     }}
                   />
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="inline-flex items-center gap-2 font-ui text-sm text-bea-charcoal hover:text-bea-amber transition-colors duration-300 disabled:opacity-40"
-                  >
-                    <Camera size={14} strokeWidth={1.5} />
-                    {uploading ? 'Uploading...' : photo ? 'Change photo' : 'Add a photo'}
-                  </button>
-                  {photo && !uploading && (
-                    <button
-                      onClick={removePhoto}
-                      className="font-ui text-xs text-bea-blue hover:text-bea-clay transition-colors duration-300 self-start"
-                    >
-                      Remove
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {!photo || uploading ? (
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="inline-flex items-center gap-1.5 font-ui text-xs text-bea-blue hover:text-bea-amber transition-colors duration-300 disabled:opacity-40"
+                      >
+                        <Camera size={12} strokeWidth={1.5} />
+                        {uploading ? 'Uploading...' : 'Add photo'}
+                      </button>
+                    ) : photoMenuOpen ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            fileInputRef.current?.click()
+                            setPhotoMenuOpen(false)
+                          }}
+                          className="font-ui text-xs text-bea-blue hover:text-bea-amber transition-colors duration-300"
+                        >
+                          Upload new
+                        </button>
+                        <button
+                          onClick={() => {
+                            removePhoto()
+                            setPhotoMenuOpen(false)
+                          }}
+                          className="font-ui text-xs text-bea-blue hover:text-bea-clay transition-colors duration-300"
+                        >
+                          Remove
+                        </button>
+                        <button
+                          onClick={() => setPhotoMenuOpen(false)}
+                          className="font-ui text-xs text-bea-blue/60 hover:text-bea-charcoal transition-colors duration-300"
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => setPhotoMenuOpen(true)}
+                        className="inline-flex items-center gap-1.5 font-ui text-xs text-bea-blue hover:text-bea-amber transition-colors duration-300"
+                      >
+                        <Camera size={12} strokeWidth={1.5} />
+                        Change
+                      </button>
+                    )}
+                  </div>
                 </div>
               </section>
 
-              <Section title="Bea would like to talk to you">
+              <Section title="Messages from Bea">
                 {notifs.length === 0 ? (
                   <p className="font-body text-bea-blue leading-relaxed">
                     Nothing waiting for you right now.
@@ -332,20 +364,6 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
                 </div>
               </Section>
 
-              <Section title="Help">
-                <ul className="space-y-3 font-body text-bea-charcoal leading-relaxed">
-                  <li>
-                    Bea is a quiet presence. She listens, reflects, and remembers — she does not replace the people around you.
-                  </li>
-                  <li>
-                    To set rhythms (when she listens or speaks with the household), open <em>Schedule</em> from the bottom bar.
-                  </li>
-                  <li>
-                    To begin a check-in any time, open <em>Individual</em> or <em>Family</em> from the bottom bar.
-                  </li>
-                </ul>
-              </Section>
-
               <Section title="If you need someone now">
                 <p className="font-body text-sm text-bea-olive leading-relaxed mb-4">
                   Bea is not a crisis service. If you are in distress, please reach out:
@@ -374,15 +392,15 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
                 </ul>
               </Section>
 
-              <div className="pt-6 border-t border-bea-charcoal/10">
-                <button
-                  onClick={signOut}
-                  disabled={signingOut}
-                  className="font-ui text-sm text-bea-blue hover:text-bea-charcoal transition-colors duration-500 disabled:opacity-50"
-                >
-                  {signingOut ? 'Signing out...' : 'Sign out'}
-                </button>
-              </div>
+            </div>
+            <div className="border-t border-bea-charcoal/10 px-6 py-4 bg-bea-milk">
+              <button
+                onClick={signOut}
+                disabled={signingOut}
+                className="font-ui text-sm text-bea-blue hover:text-bea-charcoal transition-colors duration-500 disabled:opacity-50"
+              >
+                {signingOut ? 'Signing out...' : 'Sign out'}
+              </button>
             </div>
           </aside>
         </div>
