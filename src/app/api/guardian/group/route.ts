@@ -279,6 +279,23 @@ export async function POST(request: NextRequest) {
     }
   })
 
+  // Refresh each affected member's pre-session context cache so the next
+  // check-in reflects what just happened. Without this the cache from before
+  // the session is served on the next /check-in, and Bea has no idea the
+  // listening session occurred.
+  const memberIdsToRefresh = perMemberRows.map((r) => r.member_id)
+  for (const mid of memberIdsToRefresh) {
+    after(async () => {
+      try {
+        await fetch(`${baseUrl}/api/guardian/context?memberId=${mid}&refresh=true`, {
+          method: 'GET',
+        })
+      } catch (err) {
+        console.error('[guardian/group] context refresh failed for', mid, err)
+      }
+    })
+  }
+
   return NextResponse.json({
     ok: true,
     session_id: session.id,
