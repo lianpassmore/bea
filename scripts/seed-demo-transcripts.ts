@@ -59,7 +59,7 @@ const SESSIONS: SessionSpec[] = [
   {
     kind: 'passive',
     file: 'demo-transcript-1-monday-morning.md',
-    startedAt: '2026-04-27T06:40:00+12:00',
+    startedAt: '2026-04-13T06:40:00+12:00',
     durationSecs: 14 * 60,
     roster: [
       { member_id: MEMBERS.Lian, name: 'Lian', consented: true },
@@ -70,7 +70,7 @@ const SESSIONS: SessionSpec[] = [
   {
     kind: 'check-in',
     file: 'demo-transcript-2-tuesday-evening.md',
-    startedAt: '2026-04-28T21:15:00+12:00',
+    startedAt: '2026-04-14T21:15:00+12:00',
     durationSecs: 7 * 60,
     memberId: MEMBERS.Lian,
     memberName: 'Lian',
@@ -78,7 +78,7 @@ const SESSIONS: SessionSpec[] = [
   {
     kind: 'passive',
     file: 'demo-transcript-3-wednesday-evening.md',
-    startedAt: '2026-04-29T19:30:00+12:00',
+    startedAt: '2026-04-15T19:30:00+12:00',
     durationSecs: 11 * 60,
     roster: [
       { member_id: MEMBERS.Lian, name: 'Lian', consented: true },
@@ -90,7 +90,7 @@ const SESSIONS: SessionSpec[] = [
   {
     kind: 'check-in',
     file: 'demo-transcript-4-friday-afternoon.md',
-    startedAt: '2026-05-01T15:45:00+12:00',
+    startedAt: '2026-04-17T15:45:00+12:00',
     durationSecs: 6 * 60,
     memberId: MEMBERS.Lian,
     memberName: 'Lian',
@@ -98,7 +98,7 @@ const SESSIONS: SessionSpec[] = [
   {
     kind: 'check-in',
     file: 'demo-transcript-5-sunday-evening.md',
-    startedAt: '2026-05-03T20:10:00+12:00',
+    startedAt: '2026-04-19T20:10:00+12:00',
     durationSecs: 8 * 60,
     memberId: MEMBERS.Lian,
     memberName: 'Lian',
@@ -174,8 +174,8 @@ async function main() {
 }
 
 // The "calmer evenings" goal is referenced across the transcripts as set
-// "last week". Seed it dated Mon Apr 6 (a week before the arc starts) so the
-// Coach agent has something to anchor reasoning to. Idempotent on title.
+// "last week". Seed it dated a week before the arc starts so the Coach agent
+// has something to anchor reasoning to. Idempotent on title.
 async function ensureGoal() {
   const title = 'I want to be calmer in the evenings'
   const { data: existing } = await supabase
@@ -200,7 +200,7 @@ async function ensureGoal() {
       direction: 'increase',
       status: 'active',
       proposed_by: { source: 'demo_seed' },
-      created_at: '2026-04-20T20:00:00+12:00',
+      created_at: '2026-04-06T20:00:00+12:00',
     })
     .select('id')
     .single()
