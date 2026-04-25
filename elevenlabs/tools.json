@@ -1,202 +1,256 @@
 {
-  "_comment": "ElevenLabs Conversational AI webhook tools for Bea. Replace {{BASE_URL}} with your publicly reachable URL (Vercel deploy or ngrok tunnel). Add each entry as a Webhook tool in the ElevenLabs dashboard for Bea's agent. Field names match the ElevenLabs tool schema; descriptions are written for the LLM to read.",
-
-  "tools": [
-    {
-      "type": "webhook",
-      "name": "fetch_family_context",
-      "description": "Call this ONCE at the start of a session to silently refresh your sense of the household — who's in the family, what goals are currently open, what patterns have been noticed lately, recent milestones, and how many sessions you've shared. Do not read this back at the user. Let it inform how you listen. Returns a `say` field (not for use), `members[]`, `goals[]`, `patterns[]`, `milestones[]`, and `sessions_count`.",
-      "api_schema": {
-        "url": "{{BASE_URL}}/api/bea-tools/fetch_family_context",
-        "method": "GET"
-      }
-    },
-
-    {
-      "type": "webhook",
-      "name": "fetch_active_goals",
-      "description": "When the conversation turns to something a person is working on, you may quietly check what's currently being tracked. Pass `member_id` for one person's goals, `scope=whanau` for family-wide goals, or no params for everything active or in draft. Do not recite the list — use it to inform what you pick up on.",
-      "api_schema": {
-        "url": "{{BASE_URL}}/api/bea-tools/fetch_active_goals",
-        "method": "GET",
-        "query_params_schema": {
-          "properties": {
-            "member_id": {
-              "type": "string",
-              "description": "UUID of a specific family member. Omit for whānau-level or for all goals."
-            },
-            "scope": {
-              "type": "string",
-              "enum": ["whanau"],
-              "description": "Set to 'whanau' to fetch family-wide goals only. Omit otherwise."
+    "_comment": "ElevenLabs Conversational AI webhook tools for Bea. Replace {{BASE_URL}} with your publicly reachable URL (Vercel deploy or ngrok tunnel). Add each entry as a Webhook tool in the ElevenLabs dashboard for Bea's agent. Field names match the ElevenLabs tool schema; descriptions are written for the LLM to read.",
+    "tools": [
+        {
+            "type": "webhook",
+            "name": "fetch_family_context",
+            "description": "Call this ONCE at the start of a session to silently refresh your sense of the household — who's in the family, what goals are currently open, what patterns have been noticed lately, recent milestones, and how many sessions you've shared. Do not read this back at the user. Let it inform how you listen. Returns a `say` field (not for use), `members[]`, `goals[]`, `patterns[]`, `milestones[]`, and `sessions_count`.",
+            "api_schema": {
+                "url": "{{BASE_URL}}/api/bea-tools/fetch_family_context",
+                "method": "GET"
             }
-          },
-          "required": []
-        }
-      }
-    },
-
-    {
-      "type": "webhook",
-      "name": "propose_goal",
-      "description": "If someone clearly says they want to work on something (e.g. 'I want to swear less', 'we want to be kinder at dinner'), you may draft a goal. Drafts DO NOT start tracking — they need explicit confirmation. Always tell the person you've drafted it and ask if they'd like to confirm. Use snake_case `metric_key` (e.g. `swear_count_per_session`, `kindness_moments_count`) only if you can clearly count it across sessions.",
-      "api_schema": {
-        "url": "{{BASE_URL}}/api/bea-tools/propose_goal",
-        "method": "POST",
-        "request_body_schema": {
-          "type": "object",
-          "properties": {
-            "owner_type": {
-              "type": "string",
-              "enum": ["member", "whanau"],
-              "description": "'member' for an individual goal; 'whanau' for a family goal."
-            },
-            "owner_id": {
-              "type": "string",
-              "description": "UUID of the member when owner_type is 'member'. Omit for whānau goals."
-            },
-            "title": {
-              "type": "string",
-              "description": "Short, plain-language title. e.g. 'Decrease swearing during family time'."
-            },
-            "description": {
-              "type": "string",
-              "description": "1 short sentence of context — why the person wants this."
-            },
-            "metric_key": {
-              "type": "string",
-              "description": "Optional snake_case metric to count per session. Omit if there's no clean count."
-            },
-            "direction": {
-              "type": "string",
-              "enum": ["decrease", "increase", "maintain"],
-              "description": "Which way 'good' looks for this metric."
-            },
-            "target": {
-              "type": "number",
-              "description": "Optional target value."
-            },
-            "rationale": {
-              "type": "string",
-              "description": "1 sentence on why this goal arose in conversation, for the audit trail."
+        },
+        {
+            "type": "webhook",
+            "name": "fetch_active_goals",
+            "description": "When the conversation turns to something a person is working on, you may quietly check what's currently being tracked. Pass `member_id` for one person's goals, `scope=whanau` for family-wide goals, or no params for everything active or in draft. Do not recite the list — use it to inform what you pick up on.",
+            "api_schema": {
+                "url": "{{BASE_URL}}/api/bea-tools/fetch_active_goals",
+                "method": "GET",
+                "query_params_schema": {
+                    "properties": {
+                        "member_id": {
+                            "type": "string",
+                            "description": "UUID of a specific family member. Omit for whānau-level or for all goals."
+                        },
+                        "scope": {
+                            "type": "string",
+                            "enum": [
+                                "whanau"
+                            ],
+                            "description": "Set to 'whanau' to fetch family-wide goals only. Omit otherwise."
+                        }
+                    },
+                    "required": []
+                }
             }
-          },
-          "required": ["owner_type", "title"]
-        }
-      }
-    },
-
-    {
-      "type": "webhook",
-      "name": "confirm_goal",
-      "description": "Call ONLY after the person clearly agrees to a previously proposed draft goal. Flips the goal from 'draft' to 'active' so observations begin. Never confirm without explicit consent in the conversation.",
-      "api_schema": {
-        "url": "{{BASE_URL}}/api/bea-tools/confirm_goal",
-        "method": "POST",
-        "request_body_schema": {
-          "type": "object",
-          "properties": {
-            "goal_id": {
-              "type": "string",
-              "description": "UUID of the draft goal returned by propose_goal."
+        },
+        {
+            "type": "webhook",
+            "name": "propose_goal",
+            "description": "If someone clearly says they want to work on something (e.g. 'I want to swear less', 'we want to be kinder at dinner'), you may draft a goal. Drafts DO NOT start tracking — they need explicit confirmation. Always tell the person you've drafted it and ask if they'd like to confirm. Use snake_case `metric_key` (e.g. `swear_count_per_session`, `kindness_moments_count`) only if you can clearly count it across sessions.",
+            "api_schema": {
+                "url": "{{BASE_URL}}/api/bea-tools/propose_goal",
+                "method": "POST",
+                "request_body_schema": {
+                    "type": "object",
+                    "properties": {
+                        "owner_type": {
+                            "type": "string",
+                            "enum": [
+                                "member",
+                                "whanau"
+                            ],
+                            "description": "'member' for an individual goal; 'whanau' for a family goal."
+                        },
+                        "owner_id": {
+                            "type": "string",
+                            "description": "UUID of the member when owner_type is 'member'. Omit for whānau goals."
+                        },
+                        "title": {
+                            "type": "string",
+                            "description": "Short, plain-language title. e.g. 'Decrease swearing during family time'."
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "1 short sentence of context — why the person wants this."
+                        },
+                        "metric_key": {
+                            "type": "string",
+                            "description": "Optional snake_case metric to count per session. Omit if there's no clean count."
+                        },
+                        "direction": {
+                            "type": "string",
+                            "enum": [
+                                "decrease",
+                                "increase",
+                                "maintain"
+                            ],
+                            "description": "Which way 'good' looks for this metric."
+                        },
+                        "target": {
+                            "type": "number",
+                            "description": "Optional target value."
+                        },
+                        "rationale": {
+                            "type": "string",
+                            "description": "1 sentence on why this goal arose in conversation, for the audit trail."
+                        }
+                    },
+                    "required": [
+                        "owner_type",
+                        "title"
+                    ]
+                }
             }
-          },
-          "required": ["goal_id"]
-        }
-      }
-    },
-
-    {
-      "type": "webhook",
-      "name": "log_observation",
-      "description": "When you've just heard a clean numerical observation against an active goal (e.g. you've been asked to count something during the conversation, or someone reports back on a goal), log the value. Be literal — count what was actually observed.",
-      "api_schema": {
-        "url": "{{BASE_URL}}/api/bea-tools/log_observation",
-        "method": "POST",
-        "request_body_schema": {
-          "type": "object",
-          "properties": {
-            "goal_id": {
-              "type": "string",
-              "description": "UUID of an active goal."
-            },
-            "value": {
-              "type": "number",
-              "description": "The numeric observation."
-            },
-            "note": {
-              "type": "string",
-              "description": "1 short sentence describing what was counted or observed."
+        },
+        {
+            "type": "webhook",
+            "name": "confirm_goal",
+            "description": "Call ONLY after the person clearly agrees to a previously proposed draft goal. Flips the goal from 'draft' to 'active' so observations begin. Never confirm without explicit consent in the conversation.",
+            "api_schema": {
+                "url": "{{BASE_URL}}/api/bea-tools/confirm_goal",
+                "method": "POST",
+                "request_body_schema": {
+                    "type": "object",
+                    "properties": {
+                        "goal_id": {
+                            "type": "string",
+                            "description": "UUID of the draft goal returned by propose_goal."
+                        }
+                    },
+                    "required": [
+                        "goal_id"
+                    ]
+                }
             }
-          },
-          "required": ["goal_id", "value"]
-        }
-      }
-    },
-
-    {
-      "type": "webhook",
-      "name": "log_milestone",
-      "description": "When a moment is genuinely worth marking — a first apology, a week of consistency, a shift the family has been reaching for — quietly record it. Do not announce milestones unprompted; this is for the family's record. Use a snake_case `kind` like 'first_apology', 'one_week_kinder', 'goal_achieved'.",
-      "api_schema": {
-        "url": "{{BASE_URL}}/api/bea-tools/log_milestone",
-        "method": "POST",
-        "request_body_schema": {
-          "type": "object",
-          "properties": {
-            "owner_type": {
-              "type": "string",
-              "enum": ["member", "whanau"],
-              "description": "'member' for an individual milestone; 'whanau' for a family one."
-            },
-            "owner_id": {
-              "type": "string",
-              "description": "UUID of the member when owner_type is 'member'. Omit for family milestones."
-            },
-            "kind": {
-              "type": "string",
-              "description": "snake_case identifier — used to ensure it's only awarded once per owner."
-            },
-            "title": {
-              "type": "string",
-              "description": "Short human-readable title for the milestone."
+        },
+        {
+            "type": "webhook",
+            "name": "log_observation",
+            "description": "When you've just heard a clean numerical observation against an active goal (e.g. you've been asked to count something during the conversation, or someone reports back on a goal), log the value. Be literal — count what was actually observed.",
+            "api_schema": {
+                "url": "{{BASE_URL}}/api/bea-tools/log_observation",
+                "method": "POST",
+                "request_body_schema": {
+                    "type": "object",
+                    "properties": {
+                        "goal_id": {
+                            "type": "string",
+                            "description": "UUID of an active goal."
+                        },
+                        "value": {
+                            "type": "number",
+                            "description": "The numeric observation."
+                        },
+                        "note": {
+                            "type": "string",
+                            "description": "1 short sentence describing what was counted or observed."
+                        }
+                    },
+                    "required": [
+                        "goal_id",
+                        "value"
+                    ]
+                }
             }
-          },
-          "required": ["owner_type", "kind", "title"]
-        }
-      }
-    },
-
-    {
-      "type": "webhook",
-      "name": "get_recent_patterns",
-      "description": "When it might help the person to know that something has been noticed across sessions, you may gently surface the most relevant pattern. Use pattern language only ('I have been noticing...'), never declarative language ('you do this'). Pass `member_id` for one person's patterns or `scope=whanau` for family-wide.",
-      "api_schema": {
-        "url": "{{BASE_URL}}/api/bea-tools/get_recent_patterns",
-        "method": "GET",
-        "query_params_schema": {
-          "properties": {
-            "member_id": {
-              "type": "string",
-              "description": "UUID of a specific family member."
-            },
-            "scope": {
-              "type": "string",
-              "enum": ["whanau"],
-              "description": "Set to 'whanau' for family-wide patterns."
-            },
-            "days": {
-              "type": "string",
-              "description": "Window in days (default 30, max 90)."
-            },
-            "min_confidence": {
-              "type": "string",
-              "description": "Minimum pattern confidence 0..1 (default 0.3). Raise to 0.5 for higher-confidence only."
+        },
+        {
+            "type": "webhook",
+            "name": "log_milestone",
+            "description": "When a moment is genuinely worth marking — a first apology, a week of consistency, a shift the family has been reaching for — quietly record it. Do not announce milestones unprompted; this is for the family's record. Use a snake_case `kind` like 'first_apology', 'one_week_kinder', 'goal_achieved'.",
+            "api_schema": {
+                "url": "{{BASE_URL}}/api/bea-tools/log_milestone",
+                "method": "POST",
+                "request_body_schema": {
+                    "type": "object",
+                    "properties": {
+                        "owner_type": {
+                            "type": "string",
+                            "enum": [
+                                "member",
+                                "whanau"
+                            ],
+                            "description": "'member' for an individual milestone; 'whanau' for a family one."
+                        },
+                        "owner_id": {
+                            "type": "string",
+                            "description": "UUID of the member when owner_type is 'member'. Omit for family milestones."
+                        },
+                        "kind": {
+                            "type": "string",
+                            "description": "snake_case identifier — used to ensure it's only awarded once per owner."
+                        },
+                        "title": {
+                            "type": "string",
+                            "description": "Short human-readable title for the milestone."
+                        }
+                    },
+                    "required": [
+                        "owner_type",
+                        "kind",
+                        "title"
+                    ]
+                }
             }
-          },
-          "required": []
+        },
+        {
+            "type": "webhook",
+            "name": "get_recent_patterns",
+            "description": "When it might help the person to know that something has been noticed across sessions, you may gently surface the most relevant pattern. Use pattern language only ('I have been noticing...'), never declarative language ('you do this'). Pass `member_id` for one person's patterns or `scope=whanau` for family-wide.",
+            "api_schema": {
+                "url": "{{BASE_URL}}/api/bea-tools/get_recent_patterns",
+                "method": "GET",
+                "query_params_schema": {
+                    "properties": {
+                        "member_id": {
+                            "type": "string",
+                            "description": "UUID of a specific family member."
+                        },
+                        "scope": {
+                            "type": "string",
+                            "enum": [
+                                "whanau"
+                            ],
+                            "description": "Set to 'whanau' for family-wide patterns."
+                        },
+                        "days": {
+                            "type": "string",
+                            "description": "Window in days (default 30, max 90)."
+                        },
+                        "min_confidence": {
+                            "type": "string",
+                            "description": "Minimum pattern confidence 0..1 (default 0.3). Raise to 0.5 for higher-confidence only."
+                        }
+                    },
+                    "required": []
+                }
+            }
+        },
+        {
+            "type": "webhook",
+            "config": "/var/folders/v_/qxqvqlhj7ddc6w3dbpwsg4_00000gn/T/bea-tool.XXXXXX.json.wwS6XgZJbp",
+            "id": "tool_2801kq1d8ckjf0k8yzt9zj568b73"
+        },
+        {
+            "type": "webhook",
+            "config": "/var/folders/v_/qxqvqlhj7ddc6w3dbpwsg4_00000gn/T/bea-tool.XXXXXX.json.mYqj77ZVAK",
+            "id": "tool_2801kq1d8dt3ee9va63x4by8e1g2"
+        },
+        {
+            "type": "webhook",
+            "config": "/var/folders/v_/qxqvqlhj7ddc6w3dbpwsg4_00000gn/T/bea-tool.XXXXXX.json.UdxAQC6voI",
+            "id": "tool_7801kq1d8ezcfjg8894205x9sk0b"
+        },
+        {
+            "type": "webhook",
+            "config": "/var/folders/v_/qxqvqlhj7ddc6w3dbpwsg4_00000gn/T/bea-tool.XXXXXX.json.RysmxRiYIx",
+            "id": "tool_7001kq1d8g30e0sv0p3awd5hhwga"
+        },
+        {
+            "type": "webhook",
+            "config": "/var/folders/v_/qxqvqlhj7ddc6w3dbpwsg4_00000gn/T/bea-tool.XXXXXX.json.c2pJDDj3s5",
+            "id": "tool_1601kq1d8h5zemksnbwacgk8gbqm"
+        },
+        {
+            "type": "webhook",
+            "config": "/var/folders/v_/qxqvqlhj7ddc6w3dbpwsg4_00000gn/T/bea-tool.XXXXXX.json.iqKxAofxj1",
+            "id": "tool_8701kq1d8j85efn9hpv26zykq7zr"
+        },
+        {
+            "type": "webhook",
+            "config": "/var/folders/v_/qxqvqlhj7ddc6w3dbpwsg4_00000gn/T/bea-tool.XXXXXX.json.fDnIkCUVbI",
+            "id": "tool_1501kq1d8kcafkysma3zrnpfrq77"
         }
-      }
-    }
-  ]
+    ]
 }
