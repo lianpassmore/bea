@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Inter, Lora, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase-server";
@@ -23,6 +24,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") ?? "";
+  const isFullViewport = pathname.startsWith("/audit");
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -83,25 +88,33 @@ export default async function RootLayout({
       <body
         className={`${inter.variable} ${lora.variable} ${dmSans.variable} font-body bg-bea-milk text-bea-charcoal antialiased min-h-screen selection:bg-bea-amber selection:text-bea-milk`}
       >
-        {/* pb-28 leaves room for the fixed footer tab bar */}
-        <main className="max-w-md mx-auto min-h-screen p-8 pb-28 flex flex-col relative">
+        {isFullViewport ? (
+          // Full-viewport routes (e.g. /audit) render their own chrome and
+          // span the whole screen — no max-w container, no header/footer bars.
+          children
+        ) : (
+          <>
+            {/* pb-28 leaves room for the fixed footer tab bar */}
+            <main className="max-w-md mx-auto min-h-screen p-8 pb-28 flex flex-col relative">
 
-          {user && (
-            <HeaderBar
-              memberId={memberId}
-              memberName={memberName}
-              avatarUrl={avatarUrl}
-              notifications={notifications}
-            />
-          )}
+              {user && (
+                <HeaderBar
+                  memberId={memberId}
+                  memberName={memberName}
+                  avatarUrl={avatarUrl}
+                  notifications={notifications}
+                />
+              )}
 
-          <div className="flex-1 animate-fade-in flex flex-col">
-            {children}
-          </div>
+              <div className="flex-1 animate-fade-in flex flex-col">
+                {children}
+              </div>
 
-        </main>
+            </main>
 
-        {user && <FooterBar isPrimary={isPrimary} />}
+            {user && <FooterBar isPrimary={isPrimary} />}
+          </>
+        )}
       </body>
     </html>
   );

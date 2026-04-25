@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const PUBLIC_PATHS = ['/login', '/welcome']
-const PUBLIC_PREFIXES = ['/auth/']
+const PUBLIC_PREFIXES = ['/auth/', '/audit/']
 
 function isPublic(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true
@@ -10,7 +10,12 @@ function isPublic(pathname: string): boolean {
 }
 
 export async function updateSession(request: NextRequest) {
-  let response = NextResponse.next({ request })
+  // Forward the pathname as a request header so server components in the root
+  // layout can branch on the route (e.g. skip header/footer chrome on /audit).
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
+
+  let response = NextResponse.next({ request: { headers: requestHeaders } })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,7 +29,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           )
-          response = NextResponse.next({ request })
+          response = NextResponse.next({ request: { headers: requestHeaders } })
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           )
