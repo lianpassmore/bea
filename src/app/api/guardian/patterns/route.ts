@@ -91,7 +91,7 @@ function formatTranscript(turns: AttributedTurn[]): string {
 }
 
 const SESSION_MILESTONES: Array<{ count: number; kind: string; title: string }> = [
-  { count: 1, kind: 'sessions_count_1', title: 'First whānau session' },
+  { count: 1, kind: 'sessions_count_1', title: 'First family session' },
   { count: 5, kind: 'sessions_count_5', title: '5 sessions together' },
   { count: 10, kind: 'sessions_count_10', title: '10 sessions together' },
   { count: 25, kind: 'sessions_count_25', title: '25 sessions together' },

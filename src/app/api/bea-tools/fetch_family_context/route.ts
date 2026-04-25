@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 
-// ElevenLabs tool: a fresh whānau snapshot Bea can refer to during a
+// ElevenLabs tool: a fresh family snapshot Bea can refer to during a
 // conversation — who's in the family, what goals are open (per member +
-// whānau), what patterns are active, recent milestones, and a session count.
-// Designed to be called once at the start of a session.
+// family-wide), what patterns are active, recent milestones, and a session
+// count. Designed to be called once at the start of a session.
 export async function GET(_request: NextRequest) {
   const [
     membersRes,
@@ -49,8 +49,8 @@ export async function GET(_request: NextRequest) {
   const memberNames = members.map((m) => m.name)
   const say =
     members.length === 0
-      ? "I don't have any whānau members on record yet."
-      : `Whānau: ${memberNames.join(', ')}. ${goals.length} open goal${goals.length === 1 ? '' : 's'}, ${patterns.length} active pattern${patterns.length === 1 ? '' : 's'}, ${sessionsCount} session${sessionsCount === 1 ? '' : 's'} together so far.`
+      ? "I don't have any family members on record yet."
+      : `Family: ${memberNames.join(', ')}. ${goals.length} open goal${goals.length === 1 ? '' : 's'}, ${patterns.length} active pattern${patterns.length === 1 ? '' : 's'}, ${sessionsCount} session${sessionsCount === 1 ? '' : 's'} together so far.`
 
   return NextResponse.json({
     say,

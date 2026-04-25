@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 
 // ElevenLabs tool: what goals am I tracking right now for this person, or for
-// the whānau? Voice-shaped — returns a concise natural-language `say` field
-// alongside structured data Bea can branch on.
+// the family as a whole? Voice-shaped — returns a concise natural-language
+// `say` field alongside structured data Bea can branch on.
 //
 // Query: ?member_id=<uuid>   → that member's active + draft goals
-//        ?scope=whanau       → whānau active + draft goals
+//        ?scope=whanau       → family-wide active + draft goals
 //        no params           → everything currently active or draft
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     say = memberId
       ? "There aren't any goals active for this person yet."
       : scope === 'whanau'
-        ? "The whānau doesn't have any active goals yet."
+        ? "The family doesn't have any active goals yet."
         : "There aren't any goals active right now."
   } else {
     const titles = goals.map((g) => g.title).slice(0, 5)
