@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const { message } = await req.json();
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-opus-20240229', // Using Opus for the deep emotional subtext
+      model: 'claude-opus-4-7',
       max_tokens: 150, // Keep Bea's responses short and gentle
       system: BEA_SYSTEM_PROMPT,
       messages: [

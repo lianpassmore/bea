@@ -1,0 +1,27 @@
+{
+  "type": "webhook",
+  "name": "log_observation",
+  "description": "When you've just heard a clean numerical observation against an active goal (e.g. you've been asked to count something during the conversation, or someone reports back on a goal), log the value. Be literal — count what was actually observed.",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/log_observation",
+    "method": "POST",
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "goal_id": {
+          "type": "string",
+          "description": "UUID of an active goal."
+        },
+        "value": {
+          "type": "number",
+          "description": "The numeric observation."
+        },
+        "note": {
+          "type": "string",
+          "description": "1 short sentence describing what was counted or observed."
+        }
+      },
+      "required": ["goal_id", "value"]
+    }
+  }
+}

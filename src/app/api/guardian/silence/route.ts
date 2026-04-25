@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const response = await anthropic.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 4000,
-      thinking: { type: 'enabled', budget_tokens: 2000 },
+      thinking: { type: 'adaptive', display: 'summarized' },
       system: GUARDIAN_SILENCE_PROMPT,
       messages: [
         {

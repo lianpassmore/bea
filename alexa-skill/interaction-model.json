@@ -1,0 +1,44 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "bea",
+      "intents": [
+        { "name": "AMAZON.CancelIntent", "samples": [] },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": ["help", "what can I say", "what can I do"]
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": [
+            "stop",
+            "bye",
+            "goodbye",
+            "that's all",
+            "I'm done",
+            "done",
+            "finish",
+            "end session"
+          ]
+        },
+        { "name": "AMAZON.FallbackIntent", "samples": [] },
+        {
+          "name": "CaptureIntent",
+          "samples": [
+            "{message}",
+            "tell bea {message}",
+            "I want to share {message}",
+            "share {message}",
+            "bea {message}"
+          ],
+          "slots": [
+            {
+              "name": "message",
+              "type": "AMAZON.SearchQuery"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useConversation, ConversationProvider } from '@elevenlabs/react';
+import PageBackground from '@/components/page-background';
+import VoiceBars from '@/components/voice-bars';
+import FamilyCheckIn from './family-check-in';
 
 interface TranscriptMessage {
   role: 'user' | 'agent';
@@ -31,6 +34,8 @@ function displayRole(role: string): string | null {
 
 function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isFamilyMode = searchParams.get('mode') === 'family';
   const [members, setMembers] = useState<Member[] | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
@@ -160,13 +165,17 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
   // ── Start screen (authenticated solo) ──────────────────────────────
   if (!inSession && authedMember) {
     return (
-      <div className="flex flex-col flex-1 pt-20 pb-12 max-w-sm mx-auto w-full animate-fade-in">
-        <header className="mb-16">
-          <h1 className="font-serif text-3xl md:text-4xl text-bea-charcoal leading-tight">
-            Kia ora, {authedMember.name}.
+      <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm mx-auto w-full animate-fade-in">
+        <PageBackground variant="witness" />
+
+        <header className="mb-10 md:mb-16">
+          <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
+            {isFamilyMode ? 'Kia ora family.' : `Kia ora, ${authedMember.name}.`}
           </h1>
-          <p className="font-body text-lg text-bea-olive mt-6 leading-relaxed">
-            I am ready when you are.
+          <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
+            {isFamilyMode
+              ? 'I am ready for your check-in when you are.'
+              : "Hello, I'm ready for your individual check-in when you are."}
           </p>
         </header>
 
@@ -179,9 +188,9 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
               status: 'active',
             })
           }
-          className="group inline-flex items-center gap-4 font-body text-lg text-bea-charcoal transition-opacity hover:opacity-70"
+          className="group inline-flex items-center gap-4 font-body text-base md:text-lg text-bea-charcoal transition-opacity hover:opacity-70"
         >
-          <span className="h-[1px] w-8 bg-bea-amber transition-all duration-700 group-hover:w-16"></span>
+          <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-16"></span>
           Begin
         </button>
       </div>
@@ -191,35 +200,37 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
   // ── Selection view (fallback: unlinked / guest-only) ────────────────
   if (!inSession) {
     return (
-      <div className="flex flex-col flex-1 pt-20 pb-12 max-w-sm mx-auto w-full animate-fade-in">
-        <header className="mb-16 space-y-6">
-          <h1 className="font-serif text-3xl md:text-4xl text-bea-charcoal leading-tight">
+      <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm mx-auto w-full animate-fade-in">
+        <PageBackground variant="witness" />
+
+        <header className="mb-10 md:mb-16 space-y-6">
+          <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
             Who is here?
           </h1>
         </header>
 
         {loadError && (
-          <p className="font-body text-lg text-bea-clay">
+          <p className="font-body text-base md:text-lg text-bea-clay">
             I cannot seem to find your whānau right now. Please wait a moment.
           </p>
         )}
 
         {members && (
-          <div className="flex flex-col gap-8 animate-fade-in">
+          <div className="flex flex-col gap-2 animate-fade-in">
             {members.map((m) => {
               const roleLabel = displayRole(m.role);
               return (
                 <button
                   key={m.id}
                   onClick={() => startSessionForMember(m)}
-                  className="group flex items-center justify-between py-4 border-b border-bea-charcoal/10 hover:border-bea-amber/40 transition-colors duration-500"
+                  className="group flex items-center justify-between py-2.5 border-b border-bea-charcoal/10 hover:border-bea-amber/40 transition-colors duration-500"
                 >
-                  <div className="flex items-center gap-4">
-                    <span className="font-serif text-2xl text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
+                  <div className="flex items-center gap-3">
+                    <span className="font-serif text-lg md:text-2xl text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
                       {m.name}
                     </span>
                     {roleLabel && (
-                      <span className="font-ui text-sm text-bea-blue/50">
+                      <span className="font-ui text-xs md:text-sm text-bea-blue/50">
                         ({roleLabel})
                       </span>
                     )}
@@ -233,13 +244,13 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
 
             <button
               onClick={startSessionAsGuest}
-              className="group flex items-center justify-between py-4 border-b border-bea-charcoal/10 hover:border-bea-amber/40 transition-colors duration-500 mt-4"
+              className="group flex items-center justify-between py-2.5 border-b border-bea-charcoal/10 hover:border-bea-amber/40 transition-colors duration-500 mt-4"
             >
-               <div className="flex items-center gap-4">
-                  <span className="font-serif text-2xl text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
+               <div className="flex items-center gap-3">
+                  <span className="font-serif text-lg md:text-2xl text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
                     A guest
                   </span>
-                  <span className="font-ui text-sm text-bea-blue/50">
+                  <span className="font-ui text-xs md:text-sm text-bea-blue/50">
                     (Unrecorded)
                   </span>
                 </div>
@@ -255,30 +266,37 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
 
   // ── Active session view ─────────────────────────────────────────────
   return (
-    <div className="flex flex-col items-center justify-between flex-1 py-20 max-w-sm mx-auto w-full animate-fade-in">
-      
+    <div className="flex flex-col items-center justify-between flex-1 py-12 md:py-20 max-w-sm mx-auto w-full animate-fade-in">
+      <PageBackground variant="witness" />
+
       {/* 1. Status Text (Replaced standard error phrasing with first-person Bea text) */}
       <div className="text-center w-full space-y-4">
-        <h1 className="font-serif text-3xl md:text-4xl text-bea-charcoal leading-tight transition-all duration-700">
+        <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight transition-all duration-700">
           {statusText}
         </h1>
         {isConnected && (
-          <p className="font-body text-lg text-bea-olive italic transition-opacity duration-500">
-             {conversation.isSpeaking ? 'I am speaking...' : 'Speak naturally.'}
+          <p className="font-body text-base md:text-lg text-bea-olive italic transition-opacity duration-500">
+             {conversation.isSpeaking ? 'I am speaking.' : 'I am listening.'}
           </p>
         )}
       </div>
 
-      {/* 2. The Presence Indicator (Replaced the heavy Mic button with a glowing dot) */}
       <div className="flex-1 flex items-center justify-center w-full my-16">
-        <div 
-          className={`transition-all duration-700 ease-in-out rounded-full
-            ${isConnecting ? 'w-4 h-4 bg-bea-blue/30 animate-pulse' : ''}
-            ${!isConnected && !isConnecting ? 'w-4 h-4 bg-transparent' : ''}
-            ${isConnected && !conversation.isSpeaking ? 'w-4 h-4 bg-bea-amber shadow-[0_0_15px_rgba(214,168,90,0.4)] animate-[pulse_4s_ease-in-out_infinite]' : ''}
-            ${isConnected && conversation.isSpeaking ? 'w-6 h-6 bg-bea-amber shadow-[0_0_30px_rgba(214,168,90,0.6)]' : ''}
-          `}
-        />
+        {isConnected ? (
+          <VoiceBars
+            getFrequencyData={() =>
+              conversation.isSpeaking
+                ? conversation.getOutputByteFrequencyData()
+                : conversation.getInputByteFrequencyData()
+            }
+          />
+        ) : (
+          <div
+            className={`transition-all duration-700 ease-in-out rounded-full
+              ${isConnecting ? 'w-4 h-4 bg-bea-blue/30 animate-pulse' : 'w-4 h-4 bg-transparent'}
+            `}
+          />
+        )}
       </div>
 
       {/* 3. The Action (Replaced ALL CAPS with soft, unhurried text) */}
@@ -301,10 +319,25 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
   );
 }
 
-export default function CheckInClient({ authedMember }: { authedMember: AuthedMember | null }) {
+function CheckInRouter({ authedMember }: { authedMember: AuthedMember | null }) {
+  const searchParams = useSearchParams();
+  const isFamilyMode = searchParams.get('mode') === 'family';
+
+  if (isFamilyMode) {
+    return <FamilyCheckIn />;
+  }
+
   return (
     <ConversationProvider>
       <CheckInUI authedMember={authedMember} />
     </ConversationProvider>
+  );
+}
+
+export default function CheckInClient({ authedMember }: { authedMember: AuthedMember | null }) {
+  return (
+    <Suspense fallback={null}>
+      <CheckInRouter authedMember={authedMember} />
+    </Suspense>
   );
 }

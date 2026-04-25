@@ -1,5 +1,5 @@
 import { getCurrentMember } from '@/lib/auth'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 import HomeClient, { type CrisisNotificationSummary } from './home-client'
 
 type NotificationRow = {

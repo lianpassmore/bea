@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import PageBackground from '@/components/page-background'
+import PushNotificationManager from '@/components/push-notification-manager'
+import UpcomingHouseholdRhythm from '@/components/upcoming-household-rhythm'
 
 export type CrisisNotificationSummary = {
   id: string
@@ -61,10 +64,11 @@ export default function HomeClient({
 
   return (
     // Generous spacing. No boxes.
-    <div className="flex flex-col flex-1 justify-between py-12 animate-fade-in">
+    <div className="flex flex-col flex-1 justify-between py-8 md:py-12 animate-fade-in">
+      <PageBackground variant="everyday" />
 
       {/* Top: The Observation */}
-      <div className="space-y-12">
+      <div className="space-y-8 md:space-y-12">
         {notifs.length > 0 && (
           <div className="space-y-4">
             {notifs.map((n) => (
@@ -74,7 +78,7 @@ export default function HomeClient({
         )}
 
         <header>
-          <h1 className="font-serif text-3xl md:text-4xl text-bea-charcoal mb-8">
+          <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal mb-6 md:mb-8">
             {greeting()}{memberName ? `, ${memberName}.` : '.'}
           </h1>
 
@@ -84,21 +88,25 @@ export default function HomeClient({
               Recollecting...
             </p>
           ) : context?.family_summary ? (
-            <p className="font-body text-bea-charcoal text-lg leading-relaxed max-w-sm">
+            <p className="font-body text-bea-charcoal text-base md:text-lg leading-relaxed max-w-sm">
               {context.family_summary}
             </p>
           ) : (
-            <p className="font-body text-bea-blue text-lg leading-relaxed max-w-sm">
+            <p className="font-body text-bea-blue text-base md:text-lg leading-relaxed max-w-sm">
               I am here when you are ready to begin.
             </p>
           )}
+
+          <div className="mt-4">
+            <UpcomingHouseholdRhythm />
+          </div>
         </header>
 
         {/* The "Pulse" - Replaced the boxed dashboard card with elegant typography */}
         {!loading && memberName && (
-          <div className="border-t border-bea-charcoal/10 pt-8 max-w-sm">
+          <div className="border-t border-bea-charcoal/10 pt-6 md:pt-8 max-w-sm">
             {wellbeing || context?.emotional_tone ? (
-              <p className="font-serif text-xl text-bea-olive italic mb-3">
+              <p className="font-serif text-lg md:text-xl text-bea-olive italic mb-3">
                 The house has felt {WELLBEING_LABEL[wellbeing || ''] ?? context?.emotional_tone ?? 'quiet'} lately.
               </p>
             ) : null}
@@ -113,12 +121,12 @@ export default function HomeClient({
 
         {/* Empty state without boxes */}
         {!loading && !memberName && (
-           <div className="border-t border-bea-charcoal/10 pt-8 max-w-sm">
-            <p className="font-body text-bea-olive leading-relaxed mb-4">
+           <div className="border-t border-bea-charcoal/10 pt-6 md:pt-8 max-w-sm">
+            <p className="font-body text-base md:text-lg text-bea-olive leading-relaxed mb-4">
               No one has been introduced to me yet.
             </p>
-            <Link 
-              href="/setup" 
+            <Link
+              href="/setup"
               className="font-ui text-sm text-bea-charcoal border-b border-bea-amber pb-1 hover:text-bea-amber transition-colors duration-500"
             >
               Begin introductions
@@ -127,33 +135,20 @@ export default function HomeClient({
         )}
       </div>
 
-      {/* Bottom: The Invitations (Actions) */}
-      <div className="mt-16 flex flex-col gap-8 w-full max-w-sm">
-        {isPrimary ? (
-          // Replaced the 3-column grid of heavy buttons with a quiet, linear list.
-          <div className="flex flex-col gap-1 w-full">
-            <PrimaryAction href="/check-in" label="Individual check-in" />
-            <PrimaryAction href="/check-in" label="Family check-in" />
-            <PrimaryAction href="/household" label="Just listen" />
-          </div>
-        ) : (
+      {!isPrimary && (
+        <div className="mt-12 md:mt-16 flex flex-col gap-8 w-full max-w-sm">
           <Link
             href="/check-in"
-            className="group inline-flex items-center gap-4 font-body text-lg text-bea-charcoal transition-opacity hover:opacity-70"
+            className="group inline-flex items-center gap-4 font-body text-base md:text-lg text-bea-charcoal transition-opacity hover:opacity-70"
           >
-            <span className="h-[1px] w-8 bg-bea-amber transition-all duration-700 group-hover:w-16"></span>
+            <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-16"></span>
             Talk with me
           </Link>
-        )}
-
-        <div className="pt-8">
-          <Link
-            href="/schedule"
-            className="font-ui text-sm text-bea-blue hover:text-bea-charcoal transition-colors duration-500"
-          >
-            View schedule
-          </Link>
         </div>
+      )}
+
+      <div className="mt-12 md:mt-16 max-w-sm">
+        <PushNotificationManager />
       </div>
 
     </div>
@@ -203,8 +198,8 @@ function CrisisCard({
     : null
 
   return (
-    <div className={`bg-bea-milk border ${cardBorder} rounded-2xl px-6 py-5`}>
-      <h2 className="font-serif text-2xl text-bea-charcoal mb-3">
+    <div className={`bg-bea-milk border ${cardBorder} rounded-2xl px-5 py-4 md:px-6 md:py-5`}>
+      <h2 className="font-serif text-xl md:text-2xl text-bea-charcoal mb-3">
         Bea would like to talk to you about {notif.affected_member_name}.
       </h2>
       {notif.crisis_level === 'urgent' && (
@@ -212,7 +207,7 @@ function CrisisCard({
           Please make this soon.
         </p>
       )}
-      <p className={`font-body text-bea-charcoal leading-relaxed ${expanded ? 'text-lg mb-4' : 'mb-5'}`}>
+      <p className={`font-body text-bea-charcoal leading-relaxed ${expanded ? 'text-base md:text-lg mb-4' : 'text-sm md:text-base mb-5'}`}>
         {expanded && detailBriefing ? detailBriefing : notif.briefing}
       </p>
       {expanded && heardAt && (
@@ -238,28 +233,5 @@ function CrisisCard({
         )}
       </div>
     </div>
-  )
-}
-
-// Replaced heavy black background and icons with a refined, typographic list item
-function PrimaryAction({
-  href,
-  label,
-}: {
-  href: string
-  label: string
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex items-center justify-between py-4 border-b border-bea-charcoal/10 hover:border-bea-amber/40 transition-colors duration-500"
-    >
-      <span className="font-body text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
-        {label}
-      </span>
-      <span className="font-ui text-xs text-bea-amber opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        Begin
-      </span>
-    </Link>
   )
 }

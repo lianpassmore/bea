@@ -1,0 +1,49 @@
+{
+  "type": "webhook",
+  "name": "propose_goal",
+  "description": "If someone clearly says they want to work on something (e.g. 'I want to swear less', 'we want to be kinder at dinner'), you may draft a goal. Drafts DO NOT start tracking — they need explicit confirmation. Always tell the person you've drafted it and ask if they'd like to confirm. Use snake_case metric_key (e.g. swear_count_per_session, kindness_moments_count) only if you can clearly count it across sessions.",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/propose_goal",
+    "method": "POST",
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "owner_type": {
+          "type": "string",
+          "enum": ["member", "whanau"],
+          "description": "'member' for an individual goal; 'whanau' for a family goal."
+        },
+        "owner_id": {
+          "type": "string",
+          "description": "UUID of the member when owner_type is 'member'. Omit for whānau goals."
+        },
+        "title": {
+          "type": "string",
+          "description": "Short, plain-language title. e.g. 'Decrease swearing during family time'."
+        },
+        "description": {
+          "type": "string",
+          "description": "1 short sentence of context — why the person wants this."
+        },
+        "metric_key": {
+          "type": "string",
+          "description": "Optional snake_case metric to count per session. Omit if there's no clean count."
+        },
+        "direction": {
+          "type": "string",
+          "enum": ["decrease", "increase", "maintain"],
+          "description": "Which way 'good' looks for this metric."
+        },
+        "target": {
+          "type": "number",
+          "description": "Optional target value."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "1 sentence on why this goal arose in conversation, for the audit trail."
+        }
+      },
+      "required": ["owner_type", "title"]
+    }
+  }
+}

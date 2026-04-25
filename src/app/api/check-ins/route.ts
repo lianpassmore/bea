@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 
 type TranscriptRow = { role: string; message: string; time_in_call_secs: number }
 
@@ -19,7 +19,7 @@ type CheckInRow = {
 }
 
 export async function GET() {
-  const [individualResult, familyResult] = await Promise.all([
+  const [individualResult, familySessionResult] = await Promise.all([
     supabase
       .from('check_ins')
       .select('id, started_at, transcript, individual_summary, individual_themes, emotional_tone, family_pulse, suggested_focus, wellbeing_level, wellbeing_signals, wellbeing_note, reflection')
@@ -27,14 +27,18 @@ export async function GET() {
       .limit(1)
       .single(),
     supabase
-      .from('check_ins')
-      .select('started_at, individual_summary, family_pulse')
+      .from('listening_sessions')
+      .select('started_at, family_summary, family_pulse, kind')
+      .eq('status', 'attributed')
       .order('started_at', { ascending: false })
-      .limit(5),
+      .limit(1)
+      .maybeSingle(),
   ])
 
   const individual = individualResult.data as CheckInRow | null
-  const family = (familyResult.data ?? []) as Pick<CheckInRow, 'started_at' | 'individual_summary' | 'family_pulse'>[]
+  const familySession = familySessionResult.data as
+    | { started_at: string | null; family_summary: string | null; family_pulse: string | null; kind: string }
+    | null
 
   // Prefer AI-generated summary; fall back to nothing
   const individual_summary = individual?.individual_summary ?? null
@@ -56,14 +60,11 @@ export async function GET() {
 
   const last_checkin_at = individual?.started_at ?? null
 
-  // Family summary: aggregate the most recent family_pulse entries
+  // Family summary now sources from the most recent group session (guided
+  // family check-in or passive listening). Prefer the LLM family_summary, fall
+  // back to family_pulse, then null.
   const family_summary =
-    family.length > 0
-      ? family
-          .map((row) => row.family_pulse)
-          .filter(Boolean)
-          .join(' | ') || null
-      : null
+    familySession?.family_summary ?? familySession?.family_pulse ?? null
 
   return NextResponse.json({
     last_checkin_date,

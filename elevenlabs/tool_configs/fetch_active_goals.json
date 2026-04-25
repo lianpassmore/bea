@@ -1,0 +1,23 @@
+{
+  "type": "webhook",
+  "name": "fetch_active_goals",
+  "description": "When the conversation turns to something a person is working on, you may quietly check what's currently being tracked. Pass member_id for one person's goals, scope=whanau for family-wide goals, or no params for everything active or in draft. Do not recite the list — use it to inform what you pick up on.",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/fetch_active_goals",
+    "method": "GET",
+    "query_params_schema": {
+      "properties": {
+        "member_id": {
+          "type": "string",
+          "description": "UUID of a specific family member. Omit for whānau-level or for all goals."
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["whanau"],
+          "description": "Set to 'whanau' to fetch family-wide goals only. Omit otherwise."
+        }
+      },
+      "required": []
+    }
+  }
+}

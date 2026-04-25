@@ -1,0 +1,31 @@
+{
+  "type": "webhook",
+  "name": "get_recent_patterns",
+  "description": "When it might help the person to know that something has been noticed across sessions, you may gently surface the most relevant pattern. Use pattern language only ('I have been noticing...'), never declarative language ('you do this'). Pass member_id for one person's patterns or scope=whanau for family-wide.",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/get_recent_patterns",
+    "method": "GET",
+    "query_params_schema": {
+      "properties": {
+        "member_id": {
+          "type": "string",
+          "description": "UUID of a specific family member."
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["whanau"],
+          "description": "Set to 'whanau' for family-wide patterns."
+        },
+        "days": {
+          "type": "string",
+          "description": "Window in days (default 30, max 90)."
+        },
+        "min_confidence": {
+          "type": "string",
+          "description": "Minimum pattern confidence 0..1 (default 0.3). Raise to 0.5 for higher-confidence only."
+        }
+      },
+      "required": []
+    }
+  }
+}

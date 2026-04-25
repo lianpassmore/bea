@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 import { GUARDIAN_INSIGHT_PROMPT } from '@/lib/prompts'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -331,7 +331,7 @@ Read the memos side-by-side. Find the pattern none of them alone can see.`
     const response = await anthropic.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 10000,
-      thinking: { type: 'enabled', budget_tokens: 7000 },
+      thinking: { type: 'adaptive', display: 'summarized' },
       system: GUARDIAN_INSIGHT_PROMPT,
       messages: [{ role: 'user', content: userContent }],
     })

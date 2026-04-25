@@ -1,0 +1,32 @@
+{
+  "type": "webhook",
+  "name": "log_milestone",
+  "description": "When a moment is genuinely worth marking — a first apology, a week of consistency, a shift the family has been reaching for — quietly record it. Do not announce milestones unprompted; this is for the family's record. Use a snake_case kind like 'first_apology', 'one_week_kinder', 'goal_achieved'.",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/log_milestone",
+    "method": "POST",
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "owner_type": {
+          "type": "string",
+          "enum": ["member", "whanau"],
+          "description": "'member' for an individual milestone; 'whanau' for a family one."
+        },
+        "owner_id": {
+          "type": "string",
+          "description": "UUID of the member when owner_type is 'member'. Omit for family milestones."
+        },
+        "kind": {
+          "type": "string",
+          "description": "snake_case identifier — used to ensure it's only awarded once per owner."
+        },
+        "title": {
+          "type": "string",
+          "description": "Short human-readable title for the milestone."
+        }
+      },
+      "required": ["owner_type", "kind", "title"]
+    }
+  }
+}

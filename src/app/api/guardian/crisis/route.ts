@@ -24,7 +24,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin as supabase } from '@/lib/supabase-admin'
 import { GUARDIAN_CRISIS_PROMPT } from '@/lib/prompts'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -178,7 +178,7 @@ ${formatPriorSessions(priors)}`
     const response = await anthropic.messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 6000,
-      thinking: { type: 'enabled', budget_tokens: 4000 },
+      thinking: { type: 'adaptive', display: 'summarized' },
       system: GUARDIAN_CRISIS_PROMPT,
       messages: [{ role: 'user', content: userContent }],
     })

@@ -1,0 +1,9 @@
+{
+  "type": "webhook",
+  "name": "fetch_family_context",
+  "description": "Call this ONCE at the start of a session to silently refresh your sense of the household — who's in the family, what goals are currently open, what patterns have been noticed lately, recent milestones, and how many sessions you've shared. Do not read this back at the user. Let it inform how you listen. Returns members[], goals[], patterns[], milestones[], and sessions_count.",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/fetch_family_context",
+    "method": "GET"
+  }
+}

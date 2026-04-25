@@ -1,0 +1,19 @@
+{
+  "type": "webhook",
+  "name": "confirm_goal",
+  "description": "Call ONLY after the person clearly agrees to a previously proposed draft goal. Flips the goal from 'draft' to 'active' so observations begin. Never confirm without explicit consent in the conversation.",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/confirm_goal",
+    "method": "POST",
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "goal_id": {
+          "type": "string",
+          "description": "UUID of the draft goal returned by propose_goal."
+        }
+      },
+      "required": ["goal_id"]
+    }
+  }
+}
