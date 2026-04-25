@@ -110,6 +110,27 @@ export async function POST(request: NextRequest) {
     })
   }
 
+  // ── Auto-trigger Coach for each active goal owned by this member ──────
+  // Fire-and-forget. The Coach reads the fresh summary + recent observations
+  // + patterns and decides what (if anything) Bea should raise next time.
+  if (member_id && check_in_id) {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+    const { data: activeGoalsRaw } = await supabase
+      .from('goals')
+      .select('id')
+      .eq('owner_type', 'member')
+      .eq('owner_id', member_id)
+      .eq('status', 'active')
+    const activeGoals = (activeGoalsRaw ?? []) as Array<{ id: string }>
+    for (const g of activeGoals) {
+      fetch(`${baseUrl}/api/guardian/coach`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ member_id, goal_id: g.id, check_in_id }),
+      }).catch((err) => console.error('[guardian/summarise] coach trigger failed:', err))
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     summary: summaryData,

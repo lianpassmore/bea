@@ -391,6 +391,30 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // ── Auto-trigger Coach for each (consented member, active goal) ────────
+  // Fire-and-forget. The Coach reasons over the freshly-written observations
+  // and patterns to decide what (if anything) Bea should bring to the next
+  // conversation with this member about this goal.
+  const consentedIds = Array.from(consentedMemberIds)
+  if (consentedIds.length > 0) {
+    const { data: activeGoalsRaw } = await supabase
+      .from('goals')
+      .select('id, owner_id')
+      .eq('owner_type', 'member')
+      .eq('status', 'active')
+      .in('owner_id', consentedIds)
+    const activeGoals = (activeGoalsRaw ?? []) as Array<{ id: string; owner_id: string }>
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+    for (const g of activeGoals) {
+      fetch(`${baseUrl}/api/guardian/coach`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ member_id: g.owner_id, goal_id: g.id, session_id: session.id }),
+      }).catch((err) => console.error('[guardian/patterns] coach trigger failed:', err))
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     session_id: session.id,
