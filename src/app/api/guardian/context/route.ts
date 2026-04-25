@@ -51,6 +51,7 @@ type ContextOutput = {
   open_threads: string
   listening_priority: string
   listening_direction: string
+  household_vision: string
 }
 
 const FALLBACK: ContextOutput = {
@@ -61,6 +62,17 @@ const FALLBACK: ContextOutput = {
   open_threads: 'None yet — this is the first session.',
   listening_priority: 'Listen for what this person most needs to be heard on, without having to ask.',
   listening_direction: 'Listen with fresh eyes. There is no prior context to shape this.',
+  household_vision: '',
+}
+
+async function readHouseholdVision(): Promise<string> {
+  const { data } = await supabase
+    .from('households')
+    .select('vision')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  return (data?.vision as string | null) ?? ''
 }
 
 // Merge the most recent Coach decision (last 14 days) over the synthesized
@@ -101,7 +113,8 @@ export async function GET(request: NextRequest) {
       try {
         const brief = JSON.parse(cached) as ContextOutput
         const merged = await applyCoachOverride(brief, memberId)
-        return NextResponse.json(merged)
+        const household_vision = await readHouseholdVision()
+        return NextResponse.json({ ...merged, household_vision })
       } catch {
         // Corrupted entry — fall through to live synthesis
       }
@@ -161,7 +174,8 @@ export async function GET(request: NextRequest) {
     .slice(0, 8)
 
   if (checkInsRes.error || mergedHistory.length === 0) {
-    return NextResponse.json({ ...FALLBACK, last_checkin_date })
+    const household_vision = await readHouseholdVision()
+    return NextResponse.json({ ...FALLBACK, last_checkin_date, household_vision })
   }
 
   const sessionHistory = mergedHistory
@@ -179,7 +193,7 @@ export async function GET(request: NextRequest) {
     })
     .join('\n\n')
 
-  let contextData: Omit<ContextOutput, 'last_checkin_date'>
+  let contextData: Omit<ContextOutput, 'last_checkin_date' | 'household_vision'>
 
   try {
     const response = await anthropic.messages.create({
@@ -197,10 +211,11 @@ export async function GET(request: NextRequest) {
 
     const textBlock = response.content.find((b) => b.type === 'text')
     if (!textBlock || textBlock.type !== 'text') throw new Error('No text block')
-    contextData = JSON.parse(textBlock.text) as Omit<ContextOutput, 'last_checkin_date'>
+    contextData = JSON.parse(textBlock.text) as Omit<ContextOutput, 'last_checkin_date' | 'household_vision'>
   } catch (err) {
     console.error('Guardian context synthesis failed:', err)
     const s = mergedHistory[0]
+    const household_vision = await readHouseholdVision()
     const fallbackBrief: ContextOutput = {
       last_checkin_date,
       individual_summary: s?.individual_summary ?? FALLBACK.individual_summary,
@@ -209,12 +224,13 @@ export async function GET(request: NextRequest) {
       open_threads: s?.suggested_focus ?? FALLBACK.open_threads,
       listening_priority: FALLBACK.listening_priority,
       listening_direction: FALLBACK.listening_direction,
+      household_vision,
     }
     const merged = memberId ? await applyCoachOverride(fallbackBrief, memberId) : fallbackBrief
     return NextResponse.json(merged)
   }
 
-  const result: ContextOutput = { last_checkin_date, ...contextData }
+  const result: ContextOutput = { last_checkin_date, ...contextData, household_vision: '' }
 
   // Cache in memory store so the next check-in skips Opus entirely
   if (memberId) {
@@ -223,5 +239,6 @@ export async function GET(request: NextRequest) {
 
   // Merge the latest Coach output on top of the fresh synthesis
   const merged = memberId ? await applyCoachOverride(result, memberId) : result
-  return NextResponse.json(merged)
+  const household_vision = await readHouseholdVision()
+  return NextResponse.json({ ...merged, household_vision })
 }

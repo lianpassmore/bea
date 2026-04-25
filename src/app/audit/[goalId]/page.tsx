@@ -305,7 +305,7 @@ function Header({
     <header className="border-b border-bea-charcoal/10 bg-bea-milk/80 backdrop-blur sticky top-0 z-10">
       <div className="px-8 lg:px-16 xl:px-24 py-8 lg:py-14">
         <p className="font-ui text-xs uppercase tracking-[0.2em] text-bea-amber mb-4 lg:mb-6">
-          Audit · {memberName}'s goal · Set {formatLongDate(goal.created_at)}
+          Audit · {memberName}'s focus · Set {formatLongDate(goal.created_at)}
         </p>
         <h1 className="font-serif text-3xl md:text-5xl lg:text-7xl xl:text-8xl text-bea-charcoal leading-[1.05] tracking-tight">
           “{goal.title.replace(/^I want to /, '')}”
@@ -597,7 +597,7 @@ function Footer({
 
       <div>
         <h2 className="font-serif text-xl md:text-2xl text-bea-charcoal mb-4">
-          Observations against the goal
+          Observations on this focus
           {goal.metric_key && (
             <span className="font-ui text-sm text-bea-charcoal/50 ml-2">
               ({goal.metric_key})

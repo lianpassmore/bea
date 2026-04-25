@@ -137,6 +137,16 @@ function FamilyCheckInUI() {
     })
     recorder.start(1000)
 
+    const ctx: Record<string, string> = await fetch('/api/guardian/context')
+      .then((r) => {
+        if (!r.ok) throw new Error('context fetch failed')
+        return r.json()
+      })
+      .catch((err) => {
+        console.error('Guardian context fetch failed — proceeding with fallback:', err)
+        return {}
+      })
+
     try {
       conversation.startSession({
         agentId: process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID!,
@@ -144,6 +154,14 @@ function FamilyCheckInUI() {
           user_name: 'family',
           user_member_id: '',
           mode: 'family',
+          last_checkin_date: ctx.last_checkin_date ?? 'unknown',
+          individual_summary: ctx.individual_summary ?? 'No previous check-in on record.',
+          family_summary: ctx.family_summary ?? 'No family check-ins on record.',
+          emotional_tone: ctx.emotional_tone ?? 'unknown',
+          open_threads: ctx.open_threads ?? 'None on record.',
+          listening_direction: ctx.listening_direction ?? 'Listen openly to whoever is in the room.',
+          listening_priority: ctx.listening_priority ?? 'Listen for what the whānau most needs to be heard on, without having to ask.',
+          household_vision: ctx.household_vision || 'Not yet set.',
         },
       })
     } catch (err) {

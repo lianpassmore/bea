@@ -7,10 +7,12 @@ export default function HomeClient({
   memberName,
   dailyLine,
   currentGoal,
+  whanauGoal,
 }: {
   memberName: string | null
   dailyLine: string
   currentGoal: { id: string; title: string } | null
+  whanauGoal: { id: string; title: string } | null
 }) {
   const today = new Date().toLocaleDateString('en-NZ', {
     weekday: 'long',
@@ -33,15 +35,29 @@ export default function HomeClient({
         </h1>
       </header>
 
-      {/* 2. MIDDLE ZONE: The Goal (Absolute hero of the screen) */}
-      {currentGoal && (
-        <div className="flex-1 flex flex-col justify-center py-8 sm:py-12 md:py-16">
-          <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue mb-4 sm:mb-6">
-            Current focus
-          </p>
-          <h2 className="font-serif italic text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-bea-charcoal leading-[1.15] tracking-tight">
-            &ldquo;{currentGoal.title.replace(/^I want to /, '')}&rdquo;
-          </h2>
+      {/* 2. MIDDLE ZONE: Current focus, both individual and whānau */}
+      {(currentGoal || whanauGoal) && (
+        <div className="flex-1 flex flex-col justify-center py-8 sm:py-12 md:py-16 gap-10 sm:gap-12 md:gap-16">
+          {currentGoal && (
+            <div>
+              <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue mb-3 sm:mb-4">
+                Your focus
+              </p>
+              <h2 className="font-serif italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-bea-charcoal leading-[1.15] tracking-tight">
+                &ldquo;{currentGoal.title.replace(/^I want to /, '')}&rdquo;
+              </h2>
+            </div>
+          )}
+          {whanauGoal && (
+            <div>
+              <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-amber mb-3 sm:mb-4">
+                Whānau focus
+              </p>
+              <h2 className="font-serif italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-bea-charcoal leading-[1.15] tracking-tight">
+                &ldquo;{whanauGoal.title.replace(/^I want to /, '')}&rdquo;
+              </h2>
+            </div>
+          )}
         </div>
       )}
 

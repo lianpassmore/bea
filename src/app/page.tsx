@@ -48,11 +48,23 @@ export default async function Home() {
     if (goalRow) currentGoal = goalRow as { id: string; title: string }
   }
 
+  const { data: whanauRow } = await supabaseAdmin
+    .from('goals')
+    .select('id, title')
+    .eq('owner_type', 'whanau')
+    .is('owner_id', null)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const whanauGoal = whanauRow ? (whanauRow as { id: string; title: string }) : null
+
   return (
     <HomeClient
       memberName={member?.name ?? null}
       dailyLine={getDailyLine()}
       currentGoal={currentGoal}
+      whanauGoal={whanauGoal}
     />
   )
 }

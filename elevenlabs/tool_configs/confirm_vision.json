@@ -1,0 +1,27 @@
+{
+  "type": "webhook",
+  "name": "confirm_vision",
+  "description": "Once the whānau has confirmed the wording of their family vision in voice, write it to the household record. ONLY call after explicit family agreement. The whānau iterates the wording with you in voice; this tool is the moment that wording becomes held. Never call speculatively. In whānau mode, omit set_by_member_id (the vision is held by the household, not by any one member).",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/confirm_vision",
+    "method": "POST",
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The exact, family-agreed wording of the vision. This is what gets held — not a paraphrase, not a draft."
+        },
+        "set_by_member_id": {
+          "type": "string",
+          "description": "UUID of the member who confirmed it, when known and meaningful. Omit in whānau mode — the vision belongs to the household, not to any one member."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "1 sentence on why this wording landed for the family, for the audit trail."
+        }
+      },
+      "required": ["text"]
+    }
+  }
+}

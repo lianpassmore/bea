@@ -138,6 +138,7 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
           open_threads: ctx.open_threads ?? 'None on record.',
           listening_direction: ctx.listening_direction ?? 'Listen openly.',
           listening_priority: ctx.listening_priority ?? 'Listen for what has been heaviest lately.',
+          household_vision: ctx.household_vision || 'Not yet set.',
         },
       });
     } catch {

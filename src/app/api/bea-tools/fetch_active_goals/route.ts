@@ -41,16 +41,16 @@ export async function GET(request: NextRequest) {
   let say: string
   if (goals.length === 0) {
     say = memberId
-      ? "There aren't any goals active for this person yet."
+      ? "No current focus for this person yet."
       : scope === 'whanau'
-        ? "The family doesn't have any active goals yet."
-        : "There aren't any goals active right now."
+        ? "The whānau hasn't set a current focus yet."
+        : "Nothing in focus right now."
   } else {
     const titles = goals.map((g) => g.title).slice(0, 5)
     say =
       goals.length === 1
-        ? `One active goal: ${titles[0]}.`
-        : `${goals.length} active goals: ${titles.join('; ')}.`
+        ? `Their current focus: ${titles[0]}.`
+        : `${goals.length} areas of focus right now: ${titles.join('; ')}.`
   }
 
   return NextResponse.json({ say, goals })

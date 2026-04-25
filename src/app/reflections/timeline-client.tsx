@@ -53,9 +53,13 @@ function withinWindow(iso: string, nowMs: number, days: number): boolean {
 export default function TimelineClient({
   memberName,
   events,
+  householdVision,
+  householdVisionSetAt: _householdVisionSetAt,
 }: {
   memberName: string
   events: TimelineEvent[]
+  householdVision: string
+  householdVisionSetAt: string | null
 }) {
   const [nowMs] = useState(() => Date.now())
 
@@ -80,6 +84,17 @@ export default function TimelineClient({
 
   return (
     <div className="flex flex-col flex-1 pt-12 pb-12 md:pt-20 md:pb-20 max-w-xl mx-auto w-full animate-fade-in">
+      {householdVision && (
+        <div className="mb-8 md:mb-12">
+          <p className="font-ui text-xs uppercase tracking-wide text-bea-blue mb-2">
+            This whānau is growing toward
+          </p>
+          <p className="font-serif text-base md:text-lg text-bea-charcoal italic leading-relaxed">
+            {householdVision}
+          </p>
+        </div>
+      )}
+
       <header className="mb-10 md:mb-16">
         <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
           What we&apos;ve shared, {memberName}.
