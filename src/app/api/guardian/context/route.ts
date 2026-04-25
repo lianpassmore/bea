@@ -52,6 +52,7 @@ type ContextOutput = {
   listening_priority: string
   listening_direction: string
   household_vision: string
+  individual_vision: string
 }
 
 const FALLBACK: ContextOutput = {
@@ -63,6 +64,7 @@ const FALLBACK: ContextOutput = {
   listening_priority: 'Listen for what this person most needs to be heard on, without having to ask.',
   listening_direction: 'Listen with fresh eyes. There is no prior context to shape this.',
   household_vision: '',
+  individual_vision: '',
 }
 
 async function readHouseholdVision(): Promise<string> {
@@ -71,6 +73,16 @@ async function readHouseholdVision(): Promise<string> {
     .select('vision')
     .order('created_at', { ascending: false })
     .limit(1)
+    .maybeSingle()
+  return (data?.vision as string | null) ?? ''
+}
+
+async function readIndividualVision(memberId: string | null): Promise<string> {
+  if (!memberId) return ''
+  const { data } = await supabase
+    .from('members')
+    .select('vision')
+    .eq('id', memberId)
     .maybeSingle()
   return (data?.vision as string | null) ?? ''
 }
@@ -114,7 +126,8 @@ export async function GET(request: NextRequest) {
         const brief = JSON.parse(cached) as ContextOutput
         const merged = await applyCoachOverride(brief, memberId)
         const household_vision = await readHouseholdVision()
-        return NextResponse.json({ ...merged, household_vision })
+        const individual_vision = await readIndividualVision(memberId)
+        return NextResponse.json({ ...merged, household_vision, individual_vision })
       } catch {
         // Corrupted entry — fall through to live synthesis
       }
@@ -175,7 +188,8 @@ export async function GET(request: NextRequest) {
 
   if (checkInsRes.error || mergedHistory.length === 0) {
     const household_vision = await readHouseholdVision()
-    return NextResponse.json({ ...FALLBACK, last_checkin_date, household_vision })
+    const individual_vision = await readIndividualVision(memberId)
+    return NextResponse.json({ ...FALLBACK, last_checkin_date, household_vision, individual_vision })
   }
 
   const sessionHistory = mergedHistory
@@ -193,7 +207,7 @@ export async function GET(request: NextRequest) {
     })
     .join('\n\n')
 
-  let contextData: Omit<ContextOutput, 'last_checkin_date' | 'household_vision'>
+  let contextData: Omit<ContextOutput, 'last_checkin_date' | 'household_vision' | 'individual_vision'>
 
   try {
     const response = await anthropic.messages.create({
@@ -211,11 +225,12 @@ export async function GET(request: NextRequest) {
 
     const textBlock = response.content.find((b) => b.type === 'text')
     if (!textBlock || textBlock.type !== 'text') throw new Error('No text block')
-    contextData = JSON.parse(textBlock.text) as Omit<ContextOutput, 'last_checkin_date' | 'household_vision'>
+    contextData = JSON.parse(textBlock.text) as Omit<ContextOutput, 'last_checkin_date' | 'household_vision' | 'individual_vision'>
   } catch (err) {
     console.error('Guardian context synthesis failed:', err)
     const s = mergedHistory[0]
     const household_vision = await readHouseholdVision()
+    const individual_vision = await readIndividualVision(memberId)
     const fallbackBrief: ContextOutput = {
       last_checkin_date,
       individual_summary: s?.individual_summary ?? FALLBACK.individual_summary,
@@ -225,12 +240,13 @@ export async function GET(request: NextRequest) {
       listening_priority: FALLBACK.listening_priority,
       listening_direction: FALLBACK.listening_direction,
       household_vision,
+      individual_vision,
     }
     const merged = memberId ? await applyCoachOverride(fallbackBrief, memberId) : fallbackBrief
     return NextResponse.json(merged)
   }
 
-  const result: ContextOutput = { last_checkin_date, ...contextData, household_vision: '' }
+  const result: ContextOutput = { last_checkin_date, ...contextData, household_vision: '', individual_vision: '' }
 
   // Cache in memory store so the next check-in skips Opus entirely
   if (memberId) {
@@ -240,5 +256,6 @@ export async function GET(request: NextRequest) {
   // Merge the latest Coach output on top of the fresh synthesis
   const merged = memberId ? await applyCoachOverride(result, memberId) : result
   const household_vision = await readHouseholdVision()
-  return NextResponse.json({ ...merged, household_vision })
+  const individual_vision = await readIndividualVision(memberId)
+  return NextResponse.json({ ...merged, household_vision, individual_vision })
 }

@@ -1,0 +1,27 @@
+{
+  "type": "webhook",
+  "name": "confirm_individual_vision",
+  "description": "Once the person has confirmed the wording of their own personal vision in voice, write it to their member record. ONLY call after explicit agreement. The person iterates the wording with you in voice; this tool is the moment that wording becomes held. Never call speculatively. ONLY in 1:1 mode (when user_member_id is populated). Never call in whānau mode — use confirm_vision for the family-level kaupapa.",
+  "api_schema": {
+    "url": "{{BASE_URL}}/api/bea-tools/confirm_individual_vision",
+    "method": "POST",
+    "request_body_schema": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "The exact, person-agreed wording of their vision. This is what gets held — not a paraphrase, not a draft."
+        },
+        "member_id": {
+          "type": "string",
+          "description": "UUID of the person whose vision this is. Use {{user_member_id}}."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "1 sentence on why this wording landed for them, for the audit trail."
+        }
+      },
+      "required": ["text", "member_id"]
+    }
+  }
+}

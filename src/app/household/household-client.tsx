@@ -109,7 +109,7 @@ const LISTEN_DURATIONS = [
   { label: '1 hr', ms: 60 * 60 * 1000 },
 ]
 
-function HouseholdScreen() {
+function HouseholdScreen({ householdVision }: { householdVision: string }) {
   const [time, setTime] = useState('')
   const [schedules, setSchedules] = useState<Schedule[]>([])
   const [activeSession, setActiveSession] = useState<ActiveSession | null>(null)
@@ -323,8 +323,19 @@ function HouseholdScreen() {
 
   return (
     // Centered layout makes sense here because it acts like an ambient clock/display
-    <div className="flex flex-col items-center justify-center min-h-[85vh] text-center w-full px-4 animate-fade-in">
+    <div className="relative flex flex-col items-center justify-center min-h-[85vh] text-center w-full px-4 animate-fade-in">
       <PageBackground variant="rest" />
+
+      {householdVision && (
+        <div className="absolute top-6 md:top-10 left-0 right-0 px-6 max-w-xl mx-auto">
+          <p className="font-ui text-xs uppercase tracking-wide text-bea-blue mb-2">
+            This family is growing toward
+          </p>
+          <p className="font-serif text-base md:text-lg text-bea-charcoal italic leading-relaxed">
+            {householdVision}
+          </p>
+        </div>
+      )}
 
       {/* ── IDLE STATE ────────────────────────────────────── */}
       {sessionState === 'idle' && (
@@ -451,10 +462,10 @@ function HouseholdScreen() {
   )
 }
 
-export default function HouseholdClient() {
+export default function HouseholdClient({ householdVision }: { householdVision: string }) {
   return (
     <ConversationProvider>
-      <HouseholdScreen />
+      <HouseholdScreen householdVision={householdVision} />
     </ConversationProvider>
   )
 }

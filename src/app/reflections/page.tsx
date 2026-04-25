@@ -36,7 +36,7 @@ export default async function ReflectionsPage() {
   const member = await getCurrentMember()
   if (!member) redirect('/login')
 
-  const [checkInsRes, sessionsRes, memberSummariesRes, householdRes] = await Promise.all([
+  const [checkInsRes, sessionsRes, memberSummariesRes] = await Promise.all([
     supabase
       .from('check_ins')
       .select('id, started_at, reflection, emotional_tone, individual_summary, individual_themes, suggested_focus')
@@ -55,16 +55,7 @@ export default async function ReflectionsPage() {
       .from('listening_member_summaries')
       .select('session_id, reflection, emotional_tone, individual_summary, individual_themes, suggested_focus')
       .eq('member_id', member.id),
-    supabase
-      .from('households')
-      .select('vision, vision_set_at')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
   ])
-
-  const householdVision = (householdRes.data?.vision as string | null) ?? ''
-  const householdVisionSetAt = (householdRes.data?.vision_set_at as string | null) ?? null
 
   const summariesBySession = new Map<string, MemberSummaryRow>()
   for (const row of (memberSummariesRes.data ?? []) as MemberSummaryRow[]) {
@@ -112,12 +103,5 @@ export default async function ReflectionsPage() {
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   )
 
-  return (
-    <TimelineClient
-      memberName={member.name}
-      events={events}
-      householdVision={householdVision}
-      householdVisionSetAt={householdVisionSetAt}
-    />
-  )
+  return <TimelineClient memberName={member.name} events={events} />
 }

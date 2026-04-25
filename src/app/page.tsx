@@ -35,6 +35,7 @@ export default async function Home() {
   const member = await getCurrentMember()
 
   let currentGoal: { id: string; title: string } | null = null
+  let individualVision: string | null = null
   if (member) {
     const { data: goalRow } = await supabaseAdmin
       .from('goals')
@@ -46,6 +47,13 @@ export default async function Home() {
       .limit(1)
       .maybeSingle()
     if (goalRow) currentGoal = goalRow as { id: string; title: string }
+
+    const { data: visionRow } = await supabaseAdmin
+      .from('members')
+      .select('vision')
+      .eq('id', member.id)
+      .maybeSingle()
+    individualVision = (visionRow?.vision as string | null) ?? null
   }
 
   const { data: whanauRow } = await supabaseAdmin
@@ -65,6 +73,7 @@ export default async function Home() {
       dailyLine={getDailyLine()}
       currentGoal={currentGoal}
       whanauGoal={whanauGoal}
+      individualVision={individualVision}
     />
   )
 }

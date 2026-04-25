@@ -1,0 +1,10 @@
+{
+    "agents": [
+        {
+            "config": "agent_configs/Bea.json",
+            "id": "agent_8401kpw61r34e3qvegd4ypgjnpy3",
+            "version_id": "agtvrsn_5701kq3gba99fpqtbvq6nvdyv0z3",
+            "branch_id": "agtbrch_1201kpw61sw1fkztca9pfjyyrbxj"
+        }
+    ]
+}

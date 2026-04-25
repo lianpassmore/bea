@@ -251,6 +251,16 @@
             "type": "webhook",
             "config": "/var/folders/v_/qxqvqlhj7ddc6w3dbpwsg4_00000gn/T/bea-tool.XXXXXX.json.fDnIkCUVbI",
             "id": "tool_1501kq1d8kcafkysma3zrnpfrq77"
+        },
+        {
+            "type": "webhook",
+            "config": "/tmp/confirm_vision.json",
+            "id": "tool_8401kq3fjb6wfsxak7nkm22nwmp0"
+        },
+        {
+            "type": "webhook",
+            "config": "/tmp/confirm_individual_vision.json",
+            "id": "tool_6601kq3g5t4tfe5v9mv2jy435eg6"
         }
     ]
 }

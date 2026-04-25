@@ -162,6 +162,7 @@ function FamilyCheckInUI() {
           listening_direction: ctx.listening_direction ?? 'Listen openly to whoever is in the room.',
           listening_priority: ctx.listening_priority ?? 'Listen for what the whānau most needs to be heard on, without having to ask.',
           household_vision: ctx.household_vision || 'Not yet set.',
+          individual_vision: 'Not applicable in whānau mode.',
         },
       })
     } catch (err) {
