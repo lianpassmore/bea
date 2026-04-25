@@ -15,6 +15,9 @@ A reference of every screen a user can land on, what it's for, where it lives, a
 - **Text (authed home):**
   - H1: `Hello, {memberName}.` (or `Hello.` if anonymous)
   - Daily line (rotates): the value of `getDailyLine()` (a single sentence shown large)
+  - Current goal block (only if the member has an active goal — links to `/audit/{goalId}`):
+    - Label: `Your current goal`
+    - Goal text: `"{goal title with leading 'I want to ' stripped}"` (Lora italic, quoted)
 
 ---
 

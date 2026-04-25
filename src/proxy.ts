@@ -9,6 +9,6 @@ export const config = {
   matcher: [
     // Run on everything except Next internals, the favicon, and API routes
     // (which handle their own auth).
-    '/((?!_next/static|_next/image|favicon.ico|api/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon-|api/).*)',
   ],
 }
