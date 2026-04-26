@@ -14,6 +14,24 @@ interface Member {
 
 type Phase = 'roster' | 'recording' | 'uploading' | 'done' | 'error'
 
+async function notify(payload: {
+  title: string
+  body: string
+  tag?: string
+  url?: string
+  category?: 'advance' | 'start' | 'end'
+}) {
+  try {
+    await fetch('/api/notifications/broadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+  } catch (err) {
+    console.error('notify failed:', err)
+  }
+}
+
 function pickMimeType(): string {
   const candidates = [
     'audio/webm;codecs=opus',
@@ -103,6 +121,13 @@ export default function ListenClient() {
       recorder.start(1000)
       startedAtRef.current = Date.now()
       setElapsed(0)
+
+      notify({
+        title: 'Bea is listening quietly',
+        body: 'The room is being held.',
+        tag: 'bea-listen',
+        category: 'start',
+      })
       timerRef.current = window.setInterval(() => {
         setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000))
       }, 1000)
@@ -133,6 +158,13 @@ export default function ListenClient() {
     const recorder = recorderRef.current
     if (!recorder) return
     setPhase('uploading')
+
+    notify({
+      title: 'Bea has stopped listening',
+      body: 'The room is private again.',
+      tag: 'bea-listen',
+      category: 'end',
+    })
 
     if (timerRef.current) {
       window.clearInterval(timerRef.current)
