@@ -36,7 +36,7 @@ function pickMimeType(): string {
   return ''
 }
 
-function FamilyCheckInUI() {
+function FamilyCheckInUI({ householdVision }: { householdVision: string | null }) {
   const router = useRouter()
 
   const [members, setMembers] = useState<Member[] | null>(null)
@@ -257,6 +257,17 @@ function FamilyCheckInUI() {
       <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <PageBackground variant="witness" />
 
+        {householdVision && (
+          <div className="mb-8 md:mb-12 pb-6 md:pb-8 border-b border-bea-charcoal/20">
+            <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-amber mb-2 sm:mb-3">
+              Family vision
+            </p>
+            <p className="font-serif italic text-lg md:text-xl text-bea-charcoal leading-snug">
+              &ldquo;{householdVision}&rdquo;
+            </p>
+          </div>
+        )}
+
         <header className="mb-8 md:mb-12">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
             Hello, family.
@@ -420,10 +431,10 @@ function FamilyCheckInUI() {
   )
 }
 
-export default function FamilyCheckIn() {
+export default function FamilyCheckIn({ householdVision }: { householdVision: string | null }) {
   return (
     <ConversationProvider>
-      <FamilyCheckInUI />
+      <FamilyCheckInUI householdVision={householdVision} />
     </ConversationProvider>
   )
 }

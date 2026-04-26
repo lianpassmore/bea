@@ -1,7 +1,7 @@
 # Bea — System Architecture
 
 A reference for how Bea is set up, what she does, and where each piece lives.
-Last updated: 2026-04-25.
+Last updated: 2026-04-26.
 
 ---
 
@@ -76,11 +76,11 @@ based on transcript content, not voice profile.
 
 | Surface | Code | What it does |
 |---|---|---|
-| `/check-in` | [src/app/check-in/](src/app/check-in/) | 1:1 voice session. Identifies member via login session (or manual roster pick for unauthed flow), pulls listening context, opens an ElevenLabs session with dynamic variables, records transcript, fires guardian pipeline. |
-| `/check-in` (family mode) | [src/app/check-in/family-check-in.tsx](src/app/check-in/family-check-in.tsx) | Guided whole-family check-in. Multiple speakers in one session. Records audio, sends to Azure for diarization. |
+| `/check-in` | [src/app/check-in/](src/app/check-in/) | 1:1 voice session. Identifies member via login session (or manual roster pick for unauthed flow), pulls listening context, opens an ElevenLabs session with dynamic variables, records transcript, fires guardian pipeline. The start screen pins the member's personal vision (`members.vision`) at the top when set. |
+| `/check-in` (family mode) | [src/app/check-in/family-check-in.tsx](src/app/check-in/family-check-in.tsx) | Guided whole-family check-in. Multiple speakers in one session. Records audio, sends to Azure for diarization. Pulls whānau-level context (no `memberId`) and pins the household vision (`households.vision`) at the top of the roster screen. |
 | `/listen` | [src/app/listen/](src/app/listen/) | Passive household listening. Bea sits silently in the room; only Azure transcribes. No voice agent runs. Used to capture organic family conversation. |
 | `/household` | [src/app/household/](src/app/household/) | Member roster management — add, view, voice-enroll, withdraw. Primary-only. |
-| `/reflections` | [src/app/reflections/](src/app/reflections/) | Timeline of Bea's per-session reflections, merged across 1:1s and group sessions. |
+| `/reflections` | [src/app/reflections/](src/app/reflections/) | Timeline of Bea's per-session reflections, merged across 1:1s and group sessions. Pinned at the top: the household vision when set ("This whānau is growing toward..."). |
 | `/schedule` | [src/app/schedule/](src/app/schedule/) | Rhythm management — recurring listen / check-in / group prompts. |
 | `/setup` | [src/app/setup/](src/app/setup/) | New-member onboarding: consent and name. Voice-enrollment UI exists but is dormant (Azure Speaker Recognition not in the live flow — see §8). |
 | `/welcome`, `/login` | [src/app/welcome/](src/app/welcome/), [src/app/login/](src/app/login/) | OAuth/magic-link sign-in and post-auth member-link gating. |
@@ -106,22 +106,28 @@ User taps Begin
       │      returns { individual_summary, family_summary,
       │                emotional_tone, open_threads,
       │                listening_direction, listening_priority,
-      │                last_checkin_date }
+      │                last_checkin_date,
+      │                household_vision, individual_vision }
       │      listening_priority + listening_direction are overridden by the
       │      most recent Coach run (last 14 days). That's how the Coach's
       │      between-session reasoning shapes Bea's next conversation.
+      │      household_vision is read directly from the most recent
+      │      households row; individual_vision from members.vision for the
+      │      requested member. Whānau mode (no memberId) returns empty
+      │      individual_vision.
       ▼
   conversation.startSession({
       agentId, dynamicVariables: {
           user_name, user_member_id,
           last_checkin_date, individual_summary, family_summary,
           emotional_tone, open_threads,
-          listening_direction, listening_priority
+          listening_direction, listening_priority,
+          household_vision, individual_vision
       }
   })
       │      ElevenLabs places the variables into BEA_SYSTEM_PROMPT and runs
       │      the Bea agent (Claude Sonnet 4.6) against the user's voice.
-      │      During the call Bea may invoke any of her 7 webhook tools.
+      │      During the call Bea may invoke any of her 9 webhook tools.
       ▼
   Conversation ends. Transcript captured.
       │
@@ -198,10 +204,10 @@ exist so a human reviewer can see the judgement calls it made.
 
 ## 6. The voice tools (Bea's hands)
 
-Seven ElevenLabs webhook tools. Bea calls them during a guided session, when
+Nine ElevenLabs webhook tools. Bea calls them during a guided session, when
 the moment calls for it. She is instructed in her system prompt to never lead
-with a tool, never recite results unprompted, and never confirm a goal without
-explicit user agreement. Tool URLs all live under
+with a tool, never recite results unprompted, and never confirm a goal or
+vision without explicit user agreement. Tool URLs all live under
 [src/app/api/bea-tools/](src/app/api/bea-tools/).
 
 | Tool | Method | Purpose |
@@ -213,10 +219,17 @@ explicit user agreement. Tool URLs all live under
 | `log_observation` | POST | Records a numeric value against an active goal (e.g. swear count this session). |
 | `log_milestone` | POST | Marks a worth-celebrating moment. Idempotent on (owner, kind). |
 | `get_recent_patterns` | GET | Surfaces a recently noticed pattern Bea may want to gently raise. |
+| `confirm_vision` | POST | Writes the family kaupapa to `households.vision` after the whānau has agreed in voice. Whānau-mode only. No draft step — the iteration happens in conversation; the tool call IS the confirmation. |
+| `confirm_individual_vision` | POST | Writes a member's personal kaupapa to `members.vision` after they have agreed in voice. 1:1-mode only. Same single-step pattern as `confirm_vision`. |
 
 Tool registration happens via [elevenlabs/add-all.sh](elevenlabs/add-all.sh)
-which batch-creates them on ElevenLabs and returns the tool IDs to attach to
-the agent. Configs are in [elevenlabs/tool_configs/](elevenlabs/tool_configs/).
+for batch first-run setup; for incremental additions use a single targeted
+`elevenlabs tools add <name> --type webhook --config-path <expanded.json>` so
+existing tools are not duplicated. Configs are in
+[elevenlabs/tool_configs/](elevenlabs/tool_configs/). The agent's tool
+wiring lives in [elevenlabs/agent_configs/Bea.json](elevenlabs/agent_configs/Bea.json)
+under `conversation_config.agent.prompt.tool_ids` and is pushed via
+`elevenlabs agents push --agent <id>`.
 
 ---
 
@@ -227,7 +240,8 @@ All tables live in Supabase, all use `uuid` primary keys, `created_at` is
 (server-only access via the service-role key).
 
 ### Identity & consent
-- **`members`** — household roster. `id`, `name`, `role` (`primary` | `family`), `email`, `auth_user_id` (FK to `auth.users`), `azure_profile_id`, `voice_enrolled`, `consent_given_at`, `consent_withdrawn_at`, `status` (`active` | `held` | `withdrawn`), `avatar_url`. `held` covers members in the household whose consent has not been recorded (typically minors) — they are attributed in group transcripts but excluded from per-member summaries and reflections.
+- **`members`** — household roster. `id`, `name`, `role` (`primary` | `family`), `email`, `auth_user_id` (FK to `auth.users`), `azure_profile_id`, `voice_enrolled`, `consent_given_at`, `consent_withdrawn_at`, `status` (`active` | `held` | `withdrawn`), `avatar_url`, `vision`, `vision_set_at`. `held` covers members in the household whose consent has not been recorded (typically minors) — they are attributed in group transcripts but excluded from per-member summaries and reflections. `vision` is the member's personal kaupapa, set in voice via `confirm_individual_vision` and surfaced on the 1:1 check-in start screen.
+- **`households`** — single-row table holding household-level state. `id`, `name`, `created_at`, `vision`, `vision_set_at`, `vision_set_by` (FK → `members.id`, nullable). The whānau kaupapa, set in voice via `confirm_vision` and surfaced at the top of the family check-in roster screen and `/reflections`. The schema was originally created out-of-migration; vision columns added in `20260426000001_member_vision.sql` (alongside member-level fields). `members.household_id` is a legacy nullable column from an earlier design and is not currently used to scope queries.
 
 ### Sessions
 - **`check_ins`** — 1:1 voice sessions. Holds `transcript`, `summary`, `themes`, `emotional_tone`, `family_pulse`, `suggested_focus`, `wellbeing_level`, `signals`, `reflection`, `reflection_original`, all crisis_* fields including `crisis_agent_thinking` (G10's extended-thinking trace), `guardian_thinking` (G1's trace), `member_id`, `agent_id`, `is_guest`.
@@ -324,21 +338,31 @@ actions, not REST endpoints.
 
 ### ElevenLabs dynamic variables (passed at session start)
 The voice agent expects these placeholders to be filled. They're set in
-[src/app/check-in/check-in-client.tsx](src/app/check-in/check-in-client.tsx):
+[src/app/check-in/check-in-client.tsx](src/app/check-in/check-in-client.tsx)
+and [src/app/check-in/family-check-in.tsx](src/app/check-in/family-check-in.tsx):
 - `user_name`, `user_member_id`
 - `last_checkin_date`
 - `individual_summary`, `family_summary`
 - `emotional_tone`, `open_threads`
 - `listening_direction`, `listening_priority`
+- `household_vision` — the family kaupapa, or `'Not yet set.'`
+- `individual_vision` — the member's kaupapa, or `'Not yet set.'` in 1:1 mode; `'Not applicable in whānau mode.'` for family sessions
+- `mode` — set to `'family'` for whānau check-ins; absent in 1:1
 
 For non-1:1 sessions (family check-in, passive listen, guest), `user_member_id`
-is passed as `''` — Bea is instructed to use `fetch_family_context` for
-roster lookups in those modes.
+is passed as `''`. The voice agent's "How you open" section forks on this:
+populated → 1:1 mode openings; empty → whānau-mode openings (greet the room,
+ask who's in, offer the kaupapa-setting conversation on early sessions).
+Bea uses `fetch_family_context` for roster lookups in whānau mode.
 
-The system prompt itself lives in two places:
-- [elevenlabs/system_prompt.md](elevenlabs/system_prompt.md) — copy-paste-ready
-  for the ElevenLabs dashboard. **The dashboard prompt is the source of truth
-  for the voice agent.**
+The system prompt lives in three places:
+- **Live agent config** — pulled via `elevenlabs agents pull --agent <id>` to
+  [elevenlabs/agent_configs/Bea.json](elevenlabs/agent_configs/Bea.json), edited
+  there, pushed via `elevenlabs agents push --agent <id>`. **This is the
+  current source of truth for what runs in production.**
+- [elevenlabs/system_prompt.md](elevenlabs/system_prompt.md) — historical
+  copy-paste reference. May lag behind the live agent config; sync
+  post-hackathon.
 - [src/lib/prompts.ts](src/lib/prompts.ts) `BEA_SYSTEM_PROMPT` — used by
   `/api/chat` (text surfaces).
 
@@ -394,6 +418,27 @@ is therefore what shapes how Bea listens at the start of the next conversation
 `status='draft'`. Tracking only begins when the user explicitly confirms in
 voice and Bea calls `confirm_goal`.
 
+**Vision is held, not tracked.** A kaupapa (family or individual) is a vision
+the family or person is growing toward — never a metric, never graded, never
+counted. There is no draft step: the iteration happens in conversation, and
+the `confirm_vision` / `confirm_individual_vision` tool call is the moment
+the agreed wording becomes held. Bea reads it on the next session via
+`{{household_vision}}` / `{{individual_vision}}` and lets it shape how she
+listens. The household kaupapa is whānau-mode only; the individual kaupapa
+is 1:1-only. Visions are surfaced to the user pinned at the top of the
+relevant check-in start screen and (for the household kaupapa) at the top
+of `/reflections`.
+
+**Session-state-aware openings.** Bea's "How you open" section in the system
+prompt branches on what context she carries (first conversation / returning
+with substance / returning with thin context) and on mode (1:1 vs whānau).
+On a returning session with substance, she offers the user a choice between
+picking up wherever feels alive and hearing what she's been holding (drawn
+from `listening_priority` for 1:1, or `family_summary` for whānau). On an
+early whānau session with no kaupapa set, she offers the kaupapa-setting
+conversation through evocative sideways questions. The user always picks; the
+agent never assumes.
+
 **Tikanga as safety valve.** Every reflection passes through Guardian 7 before
 storage. If it fails the ten-pou check, the rewrite replaces the original;
 both are kept in `*_original` columns for audit.
@@ -444,11 +489,19 @@ and `/dev/reasoning` for a full per-session agent timeline.
   per-member context). The pattern and coach agents persist their
   thinking traces to Postgres rather than the memory store; whether to
   surface them via memory paths as well is an open design question.
-- Family-mode and passive-listen sessions still run through `BEA_SYSTEM_PROMPT`
-  even though her tools assume a single speaker. The prompt instructs her to
-  use `fetch_family_context` for roster lookups when `user_member_id` is empty,
-  which is enough for the demo, but a dedicated family-mode prompt would be
-  cleaner long-term.
+- Family-mode and passive-listen sessions still run through the same
+  ElevenLabs agent and prompt as 1:1, but the prompt's "How you open"
+  section now forks on whether `{{user_member_id}}` is populated, and the
+  whānau check-in flow now fetches `/api/guardian/context` for whānau-level
+  context (no `memberId`). A dedicated family-mode agent would still be
+  cleaner long-term; the single-agent approach is sufficient for the demo.
+- Vision UI is read-only outside voice for now. There is no in-app editor for
+  `households.vision` or `members.vision`; both are set exclusively via
+  `confirm_vision` / `confirm_individual_vision` in conversation. A
+  household/profile editor is post-hackathon work.
+- The `households` table schema was created out-of-migration originally and
+  is not fully captured in `supabase/migrations/`. `supabase db pull` once
+  the demo is over will bring it into version control cleanly.
 - The Alexa handler at [src/app/api/alexa/handler/route.ts](src/app/api/alexa/handler/route.ts)
   is dormant. Skill registration could not be completed in time for the
   hackathon demo, so the route is parked — no code outside it depends on

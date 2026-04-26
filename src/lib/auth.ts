@@ -9,6 +9,9 @@ export type MemberRow = {
   voice_enrolled: boolean
   status: 'active' | 'withdrawn'
   avatar_url: string | null
+  consent_given: boolean
+  consent_given_at: string | null
+  consent_withdrawn_at: string | null
 }
 
 export async function getCurrentUser() {
@@ -24,7 +27,7 @@ export async function getCurrentMember(): Promise<MemberRow | null> {
 
   const { data, error } = await supabase
     .from('members')
-    .select('id, name, role, email, auth_user_id, voice_enrolled, status, avatar_url')
+    .select('id, name, role, email, auth_user_id, voice_enrolled, status, avatar_url, consent_given, consent_given_at, consent_withdrawn_at')
     .eq('auth_user_id', user.id)
     .maybeSingle()
 

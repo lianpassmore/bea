@@ -8,13 +8,11 @@ export default function HomeClient({
   dailyLine,
   currentGoal,
   whanauGoal,
-  individualVision,
 }: {
   memberName: string | null
   dailyLine: string
   currentGoal: { id: string; title: string } | null
   whanauGoal: { id: string; title: string } | null
-  individualVision: string | null
 }) {
   const today = new Date().toLocaleDateString('en-NZ', {
     weekday: 'long',
@@ -27,20 +25,8 @@ export default function HomeClient({
     <div className="flex-1 flex flex-col relative z-10 animate-fade-in w-full">
       <PageBackground variant="everyday" />
 
-      {/* 0. PINNED ZONE: Personal vision (kaupapa) */}
-      {individualVision && (
-        <div className="pb-5 sm:pb-6 border-b border-bea-charcoal/20 shrink-0">
-          <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue mb-2 sm:mb-3">
-            Your vision
-          </p>
-          <p className="font-serif italic text-lg sm:text-xl md:text-2xl text-bea-charcoal leading-snug">
-            &ldquo;{individualVision}&rdquo;
-          </p>
-        </div>
-      )}
-
       {/* 1. TOP ZONE: The Greeting & Date */}
-      <header className={`pb-5 sm:pb-6 border-b border-bea-charcoal/20 flex flex-col gap-2 shrink-0 ${individualVision ? 'pt-5 sm:pt-6' : ''}`}>
+      <header className="pb-5 sm:pb-6 border-b border-bea-charcoal/20 flex flex-col gap-2 shrink-0">
         <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-olive">
           {today}
         </p>
@@ -65,7 +51,7 @@ export default function HomeClient({
           {whanauGoal && (
             <div>
               <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-amber mb-3 sm:mb-4">
-                Whānau focus
+                Family focus
               </p>
               <h2 className="font-serif italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-bea-charcoal leading-[1.15] tracking-tight">
                 &ldquo;{whanauGoal.title.replace(/^I want to /, '')}&rdquo;

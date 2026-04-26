@@ -32,7 +32,7 @@ function displayRole(role: string): string | null {
   return null;
 }
 
-function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
+function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMember | null; individualVision: string | null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isFamilyMode = searchParams.get('mode') === 'family';
@@ -170,6 +170,17 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
     return (
       <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <PageBackground variant="witness" />
+
+        {!isFamilyMode && individualVision && (
+          <div className="mb-8 md:mb-12 pb-6 md:pb-8 border-b border-bea-charcoal/20">
+            <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue mb-2 sm:mb-3">
+              Your vision
+            </p>
+            <p className="font-serif italic text-lg md:text-xl text-bea-charcoal leading-snug">
+              &ldquo;{individualVision}&rdquo;
+            </p>
+          </div>
+        )}
 
         <header className="mb-10 md:mb-16">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
@@ -322,25 +333,25 @@ function CheckInUI({ authedMember }: { authedMember: AuthedMember | null }) {
   );
 }
 
-function CheckInRouter({ authedMember }: { authedMember: AuthedMember | null }) {
+function CheckInRouter({ authedMember, individualVision, householdVision }: { authedMember: AuthedMember | null; individualVision: string | null; householdVision: string | null }) {
   const searchParams = useSearchParams();
   const isFamilyMode = searchParams.get('mode') === 'family';
 
   if (isFamilyMode) {
-    return <FamilyCheckIn />;
+    return <FamilyCheckIn householdVision={householdVision} />;
   }
 
   return (
     <ConversationProvider>
-      <CheckInUI authedMember={authedMember} />
+      <CheckInUI authedMember={authedMember} individualVision={individualVision} />
     </ConversationProvider>
   );
 }
 
-export default function CheckInClient({ authedMember }: { authedMember: AuthedMember | null }) {
+export default function CheckInClient({ authedMember, individualVision, householdVision }: { authedMember: AuthedMember | null; individualVision: string | null; householdVision: string | null }) {
   return (
     <Suspense fallback={null}>
-      <CheckInRouter authedMember={authedMember} />
+      <CheckInRouter authedMember={authedMember} individualVision={individualVision} householdVision={householdVision} />
     </Suspense>
   );
 }

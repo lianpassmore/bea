@@ -323,11 +323,11 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
 
   return (
     // Centered layout makes sense here because it acts like an ambient clock/display
-    <div className="relative flex flex-col items-center justify-center min-h-[85vh] text-center w-full px-4 animate-fade-in">
+    <div className="relative flex flex-col items-center min-h-[85vh] text-center w-full px-4 animate-fade-in">
       <PageBackground variant="rest" />
 
       {householdVision && (
-        <div className="absolute top-6 md:top-10 left-0 right-0 px-6 max-w-xl mx-auto">
+        <div className="w-full max-w-xl mx-auto pt-6 md:pt-10 px-6">
           <p className="font-ui text-xs uppercase tracking-wide text-bea-blue mb-2">
             This family is growing toward
           </p>
@@ -336,6 +336,8 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
           </p>
         </div>
       )}
+
+      <div className="flex-1 flex flex-col items-center justify-center w-full">
 
       {/* ── IDLE STATE ────────────────────────────────────── */}
       {sessionState === 'idle' && (
@@ -458,6 +460,8 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
           <p className="font-body text-base md:text-lg text-bea-olive">Taking note of what I heard...</p>
         </div>
       )}
+
+      </div>
     </div>
   )
 }

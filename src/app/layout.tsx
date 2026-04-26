@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase-server";
 import { getCurrentMember } from "@/lib/auth";
 import HeaderBar from "@/components/header-bar";
 import FooterBar from "@/components/footer-bar";
+import ConsentModal from "@/components/consent-modal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const lora = Lora({ subsets: ["latin"], variable: "--font-lora" });
@@ -37,6 +38,9 @@ export default async function RootLayout({
   let memberId: string | null = null;
   let memberName: string | null = null;
   let avatarUrl: string | null = null;
+  let needsConsent = false;
+  let consentGiven = false;
+  let consentGivenAt: string | null = null;
   type NotifRow = {
     id: string;
     briefing: string;
@@ -59,6 +63,9 @@ export default async function RootLayout({
       memberId = member.id;
       memberName = member.name;
       avatarUrl = member.avatar_url;
+      needsConsent = !member.consent_given;
+      consentGiven = member.consent_given;
+      consentGivenAt = member.consent_given_at;
       const { data } = await supabase
         .from("crisis_notifications")
         .select(
@@ -104,6 +111,8 @@ export default async function RootLayout({
                   memberName={memberName}
                   avatarUrl={avatarUrl}
                   notifications={notifications}
+                  consentGiven={consentGiven}
+                  consentGivenAt={consentGivenAt}
                 />
               )}
 
@@ -114,6 +123,9 @@ export default async function RootLayout({
             </main>
 
             {user && <FooterBar isPrimary={isPrimary} />}
+            {user && needsConsent && (
+              <ConsentModal memberName={memberName} />
+            )}
           </>
         )}
       </body>

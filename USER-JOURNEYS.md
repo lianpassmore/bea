@@ -10,6 +10,8 @@ The two roles diverge mostly in what's available, not in what the experience fee
 
 The primary is the person who pays for Bea. They open the door for everyone else.
 
+> *Lian and her husband sign up because home feels disconnected — teenagers, youth, and toddlers all under one roof, and most of the day is nagging, cleaning, whinging. They want a more cohesive team. They suspect some of what frustrates them is beyond the kids' control. They want a third set of eyes — to listen, spot patterns, and help.*
+
 ### Phase 1 · Sign up & pay (first time, ~3 min)
 
 1. **`/login`** — Opens the app, signs in with Google or a magic-link email.
@@ -28,36 +30,48 @@ The primary is the person who pays for Bea. They open the door for everyone else
    - Quiet copy underneath: *"We will begin once your whānau has gathered. There is no rush."*
    - The primary can leave and come back; the screen survives reloads and reflects the latest state.
    - Optional `Resend` per member, optional `Skip — begin without them` once at least the primary is enrolled.
-5. **`/setup`** — While they wait, the primary can run their own voice enrollment: consent → name → 30-second prompts → `Kia ora, {name}.` (Same flow described for every member.)
+> *No voice enrollment step exists in the seven-day build. Per-speaker recognition (Azure Speech Services) is out of scope; for now Bea works from diarized transcripts (`speaker 1`, `speaker 2`…) and a guardian skill maps each speaker back to the right member after the fact.*
 
 ### Phase 3 · We begin (same day, the moment everyone is in)
 
 6. **`Begin`** — When the last `Pending` row flips to `Joined` (or the primary chooses to start anyway), the welcome screen offers a single action: `Begin`. Tapping it dissolves the assembly view and routes to `/` for the first time.
-7. **`/`** — Home greets them: `Kia ora, {name}.` / `A quiet space for your whānau.` plus a rotating daily line. The footer tab bar appears. There is no dashboard, no inbox.
+7. **`/`** — Home greets them: `Kia ora, {name}.` Below the greeting sits **Bea's thoughts** — one short, deliberately reflective line drawn from a 30-day rotation (a different one each day, then the cycle repeats). The footer tab bar appears. The header carries a **profile menu** (avatar = uploaded picture, falling back to initials) which holds:
+   - Any messages from Bea waiting for them
+   - **Notifications** — a first-run prompt to choose what they want to be told about
+   - An `Add to home screen` nudge on first visit
+   - **Crisis support** — emergency / helpline links for someone who needs to talk to a human right now
+   - `Sign out`, and a way to discontinue using Bea entirely
+   Once an individual focus is set (Phase 5), it pins to the dashboard underneath the greeting.
 
 ### Phase 4 · Setting the rhythms (still day one, optional ~10 min)
 
-8. **`/schedule`** — Taps **Schedule** in the footer. Sees `Rhythms` with empty state `I do not have any times set to be present yet.` and `Establish a rhythm`. Adds, e.g.:
-   - "Sunday dinner" → 6:00pm Sunday → **Household conversation**
+8. **`/schedule`** — Taps **Schedule** in the footer. Sees `Rhythms` with empty state `I do not have any times set to be present yet.` and `Establish a rhythm`. Each household decides how often they want a **family connect** — Lian's family lands on once a week, Sunday. Adds, e.g.:
+   - "Sunday dinner" → 6:00pm Sunday → **Household conversation** (the family connect itself)
    - "Quiet evenings" → 8:00pm Mon–Fri → **Listen quietly**
 9. **`/household`** *(optional)* — At the bottom of the schedule page, follows `Open view` to the household display. This is intended to be left running on a tablet in the kitchen/living room. Shows a large clock, today's date, the next rhythm, and three "listen now" buttons (15 min / 30 min / 1 hr). When a scheduled rhythm fires, this device handles it automatically.
 
-### Phase 5 · The first real conversation
+### Phase 5 · The first real conversation — vision and focus
 
-10. **`/check-in`** — Taps **Individual** in the footer. Because they're authenticated and enrolled, they skip member selection entirely:
+10. **`/check-in`** — Taps **Individual** in the footer:
     - `Kia ora, {name}.` / `Hello, I'm ready for your individual check-in when you are.` / `Begin`.
-    - Status cycles: `Arriving...` → `I am here.` with `I am listening.` / `I am speaking.` toggling underneath the voice bars. They speak, Bea responds.
+    - Status cycles: `Arriving...` → `I am here.` with `I am listening.` / `I am speaking.` toggling underneath the voice bars.
+    - **Bea opens by asking what they're hoping for** — *"What are you wanting to get out of this? Is there anything I can help with? What's your vision for you, as part of your whānau?"* The conversation produces a **vision** — a few sentences that pin to the top of the individual page from then on.
+    - **One thing to focus on.** Before they leave, Bea invites them to pick a single focus to start with — something she'll watch for and reflect back over time. The focus pins to the dashboard underneath the home greeting.
     - Tap `Finish conversation` → `Taking note of what I heard...` → bounced back to `/`.
+
+> The whānau-level equivalent — vision and a single weekly focus, set together — happens in the first family connect (see Phase 6, *the whānau moment*).
 
 ### Phase 6 · Returning (ongoing daily use)
 
-Each return looks different but is built from the same handful of moves:
+Each return looks different but is built from the same handful of moves. Two things matter throughout: **conversational sessions and listen-only sessions are different**, and **whenever Bea is present in the family area, every household member is told.**
 
-- **The check-in** — Open the app, tap **Individual**, `Begin`, talk. There's no roster step for them — Bea recognises who's signed in.
-- **The whānau moment** — Tap **Family** (primary-only tab). Roster shows everyone present: tap `All whānau` to start, or de-select people who aren't there. Members marked `no record kept` show that note inline. Hit `Begin with selection`.
+- **The check-in** *(conversation)* — Open the app, tap **Individual**, `Begin`, talk. Bea responds. There's no roster step for them; Bea works from who's signed in.
+- **The whānau moment** *(conversation)* — Tap **Family** (primary-only tab). Roster shows everyone present: tap `All whānau` to start, or de-select people who aren't there. Members marked `no record kept` show that note inline. Hit `Begin with selection`. Bea takes part in the conversation. **The first time the household runs this**, Bea walks them through the whānau vision — *what do we want to be? where are we now? what's our north star?* — and invites them to pick **one collective thing** to work on this week (e.g. a chore schedule). The whānau vision pins to the top of the family page; the weekly focus pins to the family dashboard.
+- **The listen** *(no conversation)* — Tap **Listen** (primary-only tab). Bea is asked who's in the room (or `Skip` to start). Bea then **only listens** — she does not talk back. This is the ambient mode: drop her into a meal or a homework session and let her notice. Individual and Family are conversational; **Listen is purely passive.**
 - **The room** — When the device on `/household` reaches a scheduled time, it announces the rhythm with a push notification 5 minutes early (`Bea will start listening quietly in 5 minutes` / `Bea will start a household conversation in 5 minutes`), then begins on its own. The screen shows `{label}.` / `I am listening to the room.` with a soft amber pulse, or runs the live conversation. Anyone in the room can hit `Finish early` / `Finish conversation`.
-- **The look-back** — Tap **Insights**. Sees `What we have shared, {name}.` with `Insights from Bea` (a few short post-conversation reflections, last 7 days by default — `Show earlier` opens 30-day chunks). Below that, a collapsible `Timeline` of every individual / family / passive session, each row expandable into themes, suggested focus, family tone.
-- **The audit** *(if a goal exists)* — From a notification or another surface, opens `/audit/{goalId}` — a full-bleed, ChatGPT-thinking-style reasoning view. Each session shows `What Bea heard` on the left and `What Bea considered saying — and didn't` on the right, with rejected drafts, the chosen response (if any), rationale, and an expandable agent thinking trace. This is where the primary verifies *why* Bea raised something.
+- **Listening transparency** — Whenever Bea begins listening in the family area (background listen, Listen session, or family conversation), **every household member receives a push**: `Bea is now listening in the family area.` When she stops, a second push: `Bea has stopped listening.` This is non-negotiable; it's how the house keeps consent visible.
+- **The look-back** — Tap **Insights**. Sees `What we have shared, {name}.` with `Insights from Bea`. **Insights are produced after every kind of session** — individual check-ins, family sessions, and Listen sessions all generate one; family / Listen sessions also generate a whānau-level insight tagged to everyone who was present. Below that, a collapsible `Timeline` of every session for transparency, each row expandable into themes, suggested focus, family tone. A member only ever sees their own individual rows; whānau / passive rows surface for everyone who was in the room.
+- **The audit** *(primary, dev surface)* — `/audit/{goalId}` is a full-bleed, ChatGPT-thinking-style reasoning view: `What Bea heard` on the left, `What Bea considered saying — and didn't` on the right, with rejected drafts, the chosen response, rationale, and an expandable agent thinking trace. The route exists; today the **only way in is a link tucked into the profile-menu settings** — surfaced for the primary as a developer-facing inspection tool while we iterate on the model's reasoning.
 - **A crisis ping** — If Bea decides a member is in distress, the primary gets a notification through the profile menu (loaded into the header on every page). It surfaces the affected member's name + briefing.
 
 ### What only the primary can do
@@ -67,6 +81,7 @@ Each return looks different but is built from the same handful of moves:
 - Run an ad-hoc passive recording from `/listen` ("Who is in the room?" → start)
 - Open `/household` (the route is gated to `role === 'primary'`)
 - Receive crisis notifications about other members
+- Open `/audit/{goalId}` from the profile-menu settings (developer-facing inspection)
 
 ---
 
@@ -77,8 +92,7 @@ Each return looks different but is built from the same handful of moves:
 1. **The invite arrives** — An email lands from Bea with a link like `https://bea.app/invite/{token}`. The primary triggered it from their welcome screen; the link carries the household identity *and* the member record already waiting for them.
 2. **Tap the link** — Opens to a brief framing screen: who invited them, which household, and what Bea is. They confirm and continue.
 3. **Sign in** — Google or magic-link email, same as the primary's `/login`. On success, the invite token is consumed: their auth account is attached to the member record in one step. The primary's welcome screen flips their row from `Pending` to `Joined` in real time.
-4. **`/setup`** *(optional, if they want voice recognition)* — Same four-step flow as the primary: consent → name (pre-filled from the invite, editable) → 30-second voice enrollment → `Kia ora, {name}. I will recognise you next time we speak.` They can tap `I would rather remain a guest` on the consent screen to skip enrollment — Bea will still talk with them, but won't keep records or recognise them next time.
-5. **A short wait, if they're early** — If the primary hasn't yet pressed `Begin`, the new member sees a gentler version of the welcome holding screen: *"Your whānau is still gathering. We will begin together."* Once the primary starts, every joined member's screen transitions to `/` at the same time.
+4. **A short wait, if they're early** — If the primary hasn't yet pressed `Begin`, the new member sees a gentler version of the welcome holding screen: *"Your whānau is still gathering. We will begin together."* Once the primary starts, every joined member's screen transitions to `/` at the same time.
 
 > **Fallback path:** if someone signs in via plain `/login` without an invite token (or the token has been used / expired), they hit `/welcome` in its original "Waiting on an introduction" form until the primary re-sends a link.
 

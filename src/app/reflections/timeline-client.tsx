@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { User, Users, AudioLines, ChevronDown, type LucideIcon } from 'lucide-react'
+import { User, Users, AudioLines, Clock, ChevronDown, type LucideIcon } from 'lucide-react'
 
 export type TimelineEventKind = 'individual' | 'family' | 'listening'
 
@@ -92,6 +92,8 @@ export default function TimelineClient({
       <InsightsSection
         title="Individual insights"
         description="A few words from me to you, after we've talked or after I've listened."
+        icon={User}
+        accent="amber"
         notes={individualNotes}
         renderItem={(e) => <IndividualNote event={e} />}
         emptyBody="We haven't spoken yet. When we do, I'll leave a few words here."
@@ -100,8 +102,10 @@ export default function TimelineClient({
       />
 
       <InsightsSection
-        title="Whānau insights"
+        title="Family insights"
         description="How the room felt when I listened in."
+        icon={Users}
+        accent="olive"
         notes={familyNotes}
         renderItem={(e) => <FamilyNote event={e} />}
         emptyBody="I haven't listened to a family moment yet. When I do, I'll leave a few words about how the room felt."
@@ -110,22 +114,38 @@ export default function TimelineClient({
       />
 
       <TimelineSection events={events} nowMs={nowMs} />
-
-      <div className="mt-12 md:mt-20 border-t border-bea-charcoal/10 pt-6 md:pt-8">
-        <Link
-          href="/"
-          className="font-ui text-sm text-bea-blue hover:text-bea-charcoal transition-colors duration-500"
-        >
-          Back
-        </Link>
-      </div>
     </div>
   )
+}
+
+type Accent = 'amber' | 'olive' | 'blue'
+
+const ACCENT: Record<Accent, { border: string; icon: string; chip: string; badge: string }> = {
+  amber: {
+    border: 'border-bea-amber/60',
+    icon: 'text-bea-amber',
+    chip: 'text-bea-amber',
+    badge: 'bg-bea-amber/15',
+  },
+  olive: {
+    border: 'border-bea-olive/70',
+    icon: 'text-bea-olive',
+    chip: 'text-bea-olive',
+    badge: 'bg-bea-olive/15',
+  },
+  blue: {
+    border: 'border-bea-blue/50',
+    icon: 'text-bea-blue',
+    chip: 'text-bea-blue',
+    badge: 'bg-bea-blue/15',
+  },
 }
 
 function InsightsSection({
   title,
   description,
+  icon: Icon,
+  accent,
   notes,
   renderItem,
   emptyBody,
@@ -134,6 +154,8 @@ function InsightsSection({
 }: {
   title: string
   description: string
+  icon: LucideIcon
+  accent: Accent
   notes: TimelineEvent[]
   renderItem: (event: TimelineEvent) => ReactNode
   emptyBody: string
@@ -142,6 +164,7 @@ function InsightsSection({
 }) {
   const [open, setOpen] = useState(false)
   const [windowDays, setWindowDays] = useState(INITIAL_DAYS)
+  const a = ACCENT[accent]
 
   const visible = useMemo(
     () => notes.filter((e) => withinWindow(e.timestamp, nowMs, windowDays)),
@@ -150,16 +173,24 @@ function InsightsSection({
   const hasMore = visible.length < notes.length
 
   return (
-    <section className="border-t border-bea-charcoal/10 pt-6 md:pt-8 mb-6 md:mb-8">
+    <section className={`border-t ${a.border} pt-6 md:pt-8 mb-6 md:mb-8`}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className="flex items-center justify-between w-full group"
       >
-        <h2 className="font-serif text-xl md:text-2xl text-bea-charcoal">{title}</h2>
         <div className="flex items-center gap-3">
-          <span className="font-ui text-xs uppercase tracking-wide text-bea-blue">
+          <span
+            aria-hidden
+            className={`flex items-center justify-center w-8 h-8 rounded-full ${a.badge}`}
+          >
+            <Icon size={16} strokeWidth={1.5} className={a.icon} aria-hidden />
+          </span>
+          <h2 className="font-serif text-xl md:text-2xl text-bea-charcoal">{title}</h2>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className={`font-ui text-xs uppercase tracking-wide ${a.chip}`}>
             {notes.length} {notes.length === 1 ? 'entry' : 'entries'}
           </span>
           <ChevronDown
@@ -309,24 +340,32 @@ function TimelineSection({ events, nowMs }: { events: TimelineEvent[]; nowMs: nu
   const hasMore = visible.length < events.length
 
   return (
-    <section className="border-t border-bea-charcoal/10 pt-6 md:pt-8">
+    <section className="mt-6 md:mt-8 rounded-2xl bg-bea-charcoal/2.5 p-5 md:p-7">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className="flex items-center justify-between w-full group"
       >
-        <h2 className="font-serif text-xl md:text-2xl text-bea-charcoal">
-          Timeline
-        </h2>
+        <div className="flex items-center gap-2.5">
+          <Clock
+            size={13}
+            strokeWidth={1.5}
+            className="text-bea-blue/80 shrink-0"
+            aria-hidden
+          />
+          <h2 className="font-ui text-xs uppercase tracking-[0.18em] text-bea-blue">
+            Timeline
+          </h2>
+        </div>
         <div className="flex items-center gap-3">
-          <span className="font-ui text-xs uppercase tracking-wide text-bea-blue">
+          <span className="font-ui text-[11px] tracking-wide text-bea-blue/70">
             {events.length} {events.length === 1 ? 'entry' : 'entries'}
           </span>
           <ChevronDown
-            size={18}
+            size={14}
             strokeWidth={1.5}
-            className={`text-bea-olive transition-transform duration-300 ${
+            className={`text-bea-blue/60 transition-transform duration-300 ${
               open ? 'rotate-180' : ''
             }`}
             aria-hidden
@@ -334,7 +373,7 @@ function TimelineSection({ events, nowMs }: { events: TimelineEvent[]; nowMs: nu
         </div>
       </button>
 
-      <p className="font-body text-sm md:text-base text-bea-olive mt-3 leading-relaxed">
+      <p className="font-body text-xs md:text-sm text-bea-blue/80 mt-2 leading-relaxed">
         A record of every time we&apos;ve spoken, and every time I&apos;ve listened.
       </p>
 

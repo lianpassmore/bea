@@ -6,11 +6,15 @@ export default function HeaderBar({
   memberName,
   avatarUrl,
   notifications,
+  consentGiven,
+  consentGivenAt,
 }: {
   memberId: string | null
   memberName: string | null
   avatarUrl: string | null
   notifications: CrisisNotification[]
+  consentGiven: boolean
+  consentGivenAt: string | null
 }) {
   return (
     <header className="w-full flex justify-between items-center mb-8 md:mb-12 mt-4">
@@ -27,6 +31,8 @@ export default function HeaderBar({
         memberName={memberName}
         avatarUrl={avatarUrl}
         notifications={notifications}
+        consentGiven={consentGiven}
+        consentGivenAt={consentGivenAt}
       />
     </header>
   )

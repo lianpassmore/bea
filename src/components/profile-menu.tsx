@@ -10,6 +10,7 @@ import {
   type NotificationPrefs,
 } from '@/app/actions/notification-prefs'
 import { subscribeUser, unsubscribeUser } from '@/app/actions/push'
+import { withdrawConsent } from '@/app/actions/consent'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -33,6 +34,8 @@ type Props = {
   memberName: string | null
   avatarUrl: string | null
   notifications: CrisisNotification[]
+  consentGiven: boolean
+  consentGivenAt: string | null
 }
 
 function initialsFor(name: string | null) {
@@ -41,7 +44,7 @@ function initialsFor(name: string | null) {
   return words.map((w) => w[0]?.toUpperCase()).join('') || name[0]?.toUpperCase() || '·'
 }
 
-export default function ProfileMenu({ memberName, avatarUrl, notifications: initialNotifs }: Props) {
+export default function ProfileMenu({ memberName, avatarUrl, notifications: initialNotifs, consentGiven, consentGivenAt }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const [open, setOpen] = useState(false)
@@ -50,6 +53,7 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
   const [photoMenuOpen, setPhotoMenuOpen] = useState(false)
   const [notifs, setNotifs] = useState(initialNotifs)
   const [signingOut, setSigningOut] = useState(false)
+  const [withdrawStage, setWithdrawStage] = useState<'idle' | 'confirm' | 'submitting'>('idle')
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null)
   const [endpoint, setEndpoint] = useState<string | null>(null)
   const [pushSupported, setPushSupported] = useState(false)
@@ -173,6 +177,21 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
     await supabase.auth.signOut()
     window.location.replace('/')
   }
+
+  const confirmWithdraw = async () => {
+    setWithdrawStage('submitting')
+    const res = await withdrawConsent()
+    if (!res.success) {
+      setWithdrawStage('idle')
+      return
+    }
+    await supabase.auth.signOut()
+    window.location.replace('/')
+  }
+
+  const consentDate = consentGivenAt
+    ? new Date(consentGivenAt).toLocaleDateString('en-NZ', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null
 
   const hasUnread = notifs.length > 0
   const initials = initialsFor(memberName)
@@ -362,6 +381,68 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
                     </div>
                   )}
                 </div>
+              </Section>
+
+              <Section title="Privacy">
+                {withdrawStage === 'idle' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-body text-bea-charcoal">
+                        Consent
+                      </span>
+                      <span className="font-ui text-sm text-bea-olive">
+                        {consentGiven ? 'Accepted' : 'Not given'}
+                      </span>
+                    </div>
+                    {consentGiven && consentDate && (
+                      <p className="font-ui text-xs text-bea-blue/80">
+                        Given on {consentDate}.
+                      </p>
+                    )}
+                    <p className="font-body text-sm text-bea-olive leading-relaxed">
+                      You can withdraw your consent at any time. When you do, Bea will stop listening for you. You are also welcome to tell us directly.
+                    </p>
+                    {consentGiven && (
+                      <button
+                        onClick={() => setWithdrawStage('confirm')}
+                        className="font-ui text-sm text-bea-clay hover:text-bea-charcoal transition-colors duration-300"
+                      >
+                        Withdraw my consent from Bea
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {withdrawStage === 'confirm' && (
+                  <div className="space-y-5">
+                    <p className="font-serif text-lg text-bea-charcoal leading-snug">
+                      Are you sure?
+                    </p>
+                    <p className="font-body text-sm text-bea-olive leading-relaxed">
+                      Bea will stop listening, and you will be signed out. You can come back any time.
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={confirmWithdraw}
+                        className="w-full bg-bea-clay text-bea-milk hover:bg-[#7a3a2a] rounded-full py-3 font-body transition-all duration-300"
+                      >
+                        Yes, withdraw my consent
+                      </button>
+                      <button
+                        onClick={() => setWithdrawStage('idle')}
+                        className="font-ui text-sm text-bea-blue hover:text-bea-charcoal transition-colors duration-300"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {withdrawStage === 'submitting' && (
+                  <p className="font-body text-sm text-bea-olive">
+                    Withdrawing your consent...
+                  </p>
+                )}
               </Section>
 
               <Section title="If you need someone now">

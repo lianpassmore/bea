@@ -97,6 +97,9 @@ A reference of every screen a user can land on, what it's for, where it lives, a
 - **Purpose:** A 1:1 voice conversation with Bea. If the user is signed in and linked, skips selection; otherwise shows a roster.
 - **Text:**
   - **Authed start screen**
+    - Pinned vision (only when the member has set an individual vision):
+      - Eyebrow: `Your vision`
+      - Quoted body: `"{individual vision}"` (Lora italic)
     - H1: `Hello, {name}.`
     - Subtitle: `I'm ready for your individual check-in when you are.`
     - Primary: `Begin`
@@ -120,6 +123,9 @@ A reference of every screen a user can land on, what it's for, where it lives, a
 - **Purpose:** A guided family conversation with Bea, recorded for later transcription. Phases: roster → connecting → live → uploading → done/error.
 - **Text:**
   - **Roster**
+    - Pinned vision (only when the household vision is set):
+      - Eyebrow: `Family vision` (amber)
+      - Quoted body: `"{household vision}"` (Lora italic)
     - H1: `Hello, family.`
     - Subtitle: `A conversation for everyone in the room. Who's here?`
     - Loading: `Loading family…`
@@ -169,17 +175,26 @@ A reference of every screen a user can land on, what it's for, where it lives, a
 - **Text:**
   - H1: `What we've shared, {memberName}.`
   - Subtitle: `A few words after each time we've spoken.`
-  - Section heading: `Insights from Bea`
-  - Empty: `We haven't spoken yet. When we do, I'll leave a few words here.` + `Begin` link
-  - Empty (windowed): `Nothing in the last {n} days.`
-  - Per-entry meta: formatted date · `After we spoken`-style: `After we spoke` italic note
-  - Show-more: `Show earlier`
-  - Section heading: `Timeline` + `{n} entries`
-  - Subtitle: `A record of every time we've spoken, and every time I've listened.`
-  - Timeline kind labels: `Individual check-in` / `Family check-in` / `Bea was listening`
-  - Expanded labels: `What was present`, `A small thread`, `The family, together`, `In the room`
-  - Placeholder previews: `A quiet conversation. I have not yet written about this one.` / `I sat with your family.`
-  - Footer: `Back`
+  - **Individual insights** section (amber accent, user icon)
+    - Description: `A few words from me to you, after we've talked or after I've listened.`
+    - Counter: `{n} entries`
+    - Empty: `We haven't spoken yet. When we do, I'll leave a few words here.` + `Begin` link → `/check-in`
+    - Empty (windowed): `Nothing in the last {n} days.`
+    - Per-entry meta: formatted date · italic note `After we spoke` / `After I listened`
+    - Show-more: `Show earlier`
+  - **Family insights** section (olive accent, users icon)
+    - Description: `How the room felt when I listened in.`
+    - Counter: `{n} entries`
+    - Empty: `I haven't listened to a family moment yet. When I do, I'll leave a few words about how the room felt.` + `Begin listening` link → `/listen`
+    - Per-entry meta: formatted date · italic note `After our family check-in` / `After I listened`
+    - Inline themes block label: `In the room`
+  - **Timeline** section (collapsible)
+    - Counter: `{n} entries`
+    - Description: `A record of every time we've spoken, and every time I've listened.`
+    - Kind labels: `Individual check-in` / `Family check-in` / `Bea was listening`
+    - Expanded labels: `What was present`, `A small thread`, `The family, together`, `In the room`
+    - Placeholder previews: `A quiet conversation. I have not yet written about this one.` / `I sat with your family.`
+    - Empty: `Nothing yet.` / `Nothing in the last {n} days.`
 
 ---
 
@@ -217,6 +232,9 @@ A reference of every screen a user can land on, what it's for, where it lives, a
 - **File:** [src/app/household/household-client.tsx](bea/src/app/household/household-client.tsx)
 - **Purpose:** Always-on display intended to be left on a device in the family room. Shows a clock, the next scheduled rhythm, and quick "listen now" buttons. Drives the scheduled passive/group sessions automatically.
 - **Text:**
+  - **Pinned vision header** (always at top, only when the household vision is set)
+    - Eyebrow: `This family is growing toward`
+    - Body: `{household vision}` (Lora italic)
   - **Idle**
     - Time + date in NZ locale
     - `Hello, family. I'm ready for your check-in when you are.`
