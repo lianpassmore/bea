@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import VoiceBars from '@/components/voice-bars'
-import { DEMO_SESSION_CAP_SECS } from '@/lib/auth'
+import { DEMO_SESSION_CAP_SECS } from '@/lib/demo'
 
 interface Member {
   id: string

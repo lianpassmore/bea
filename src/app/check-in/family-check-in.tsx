@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useConversation, ConversationProvider } from '@elevenlabs/react'
 import PageBackground from '@/components/page-background'
 import VoiceBars from '@/components/voice-bars'
-import { DEMO_SESSION_CAP_SECS } from '@/lib/auth'
+import { DEMO_SESSION_CAP_SECS } from '@/lib/demo'
 
 interface Member {
   id: string

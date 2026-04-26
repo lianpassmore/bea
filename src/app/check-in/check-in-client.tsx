@@ -7,7 +7,7 @@ import { useConversation, ConversationProvider } from '@elevenlabs/react';
 import PageBackground from '@/components/page-background';
 import VoiceBars from '@/components/voice-bars';
 import FamilyCheckIn from './family-check-in';
-import { DEMO_SESSION_CAP_SECS } from '@/lib/auth';
+import { DEMO_SESSION_CAP_SECS } from '@/lib/demo';
 
 interface TranscriptMessage {
   role: 'user' | 'agent';

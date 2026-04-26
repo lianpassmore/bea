@@ -35,12 +35,6 @@ export async function getCurrentMember(): Promise<MemberRow | null> {
   return data as MemberRow | null
 }
 
-// The "Lian (Demo)" judge account. Voice surfaces cap session length when
-// this is signed in to keep ElevenLabs / Azure / Anthropic credit usage
-// bounded during hackathon judging.
-export const DEMO_EMAIL = 'demo@gmail.com'
-export const DEMO_SESSION_CAP_SECS = 5 * 60
-
-export function isDemoMember(member: { email: string | null } | null): boolean {
-  return member?.email?.toLowerCase() === DEMO_EMAIL
-}
+// Re-export from server-free module so server callers can import demo helpers
+// from the same place as MemberRow without pulling in two paths.
+export { DEMO_EMAIL, DEMO_SESSION_CAP_SECS, isDemoMember } from './demo'
