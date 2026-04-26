@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useConversation, ConversationProvider } from '@elevenlabs/react'
 import PageBackground from '@/components/page-background'
 import VoiceBars from '@/components/voice-bars'
+import { DEMO_SESSION_CAP_SECS } from '@/lib/auth'
 
 interface Member {
   id: string
@@ -36,7 +37,7 @@ function pickMimeType(): string {
   return ''
 }
 
-function FamilyCheckInUI({ householdVision }: { householdVision: string | null }) {
+function FamilyCheckInUI({ householdVision, isDemo }: { householdVision: string | null; isDemo: boolean }) {
   const router = useRouter()
 
   const [members, setMembers] = useState<Member[] | null>(null)
@@ -50,6 +51,7 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const recordStreamRef = useRef<MediaStream | null>(null)
+  const demoCapTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     fetch('/api/members')
@@ -87,6 +89,12 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
       transcriptRef.current = []
       startTimeRef.current = Date.now()
       setPhase('live')
+      if (isDemo) {
+        if (demoCapTimerRef.current) window.clearTimeout(demoCapTimerRef.current)
+        demoCapTimerRef.current = window.setTimeout(() => {
+          if (conversation.status === 'connected') conversation.endSession()
+        }, DEMO_SESSION_CAP_SECS * 1000)
+      }
     },
     onMessage: (msg: { source: 'user' | 'ai'; message: string }) => {
       transcriptRef.current.push({
@@ -96,6 +104,10 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
       })
     },
     onDisconnect: () => {
+      if (demoCapTimerRef.current) {
+        window.clearTimeout(demoCapTimerRef.current)
+        demoCapTimerRef.current = null
+      }
       void finalize()
     },
     onError: (error: unknown) => {
@@ -436,10 +448,10 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
   )
 }
 
-export default function FamilyCheckIn({ householdVision }: { householdVision: string | null }) {
+export default function FamilyCheckIn({ householdVision, isDemo }: { householdVision: string | null; isDemo: boolean }) {
   return (
     <ConversationProvider>
-      <FamilyCheckInUI householdVision={householdVision} />
+      <FamilyCheckInUI householdVision={householdVision} isDemo={isDemo} />
     </ConversationProvider>
   )
 }

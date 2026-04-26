@@ -1,4 +1,4 @@
-import { getCurrentMember } from '@/lib/auth'
+import { getCurrentMember, isDemoMember } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import CheckInClient from './check-in-client'
 
@@ -32,6 +32,7 @@ export default async function CheckInPage() {
       }
       individualVision={individualVision}
       householdVision={householdVision}
+      isDemo={isDemoMember(member)}
     />
   )
 }

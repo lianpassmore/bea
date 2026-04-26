@@ -34,3 +34,13 @@ export async function getCurrentMember(): Promise<MemberRow | null> {
   if (error) return null
   return data as MemberRow | null
 }
+
+// The "Lian (Demo)" judge account. Voice surfaces cap session length when
+// this is signed in to keep ElevenLabs / Azure / Anthropic credit usage
+// bounded during hackathon judging.
+export const DEMO_EMAIL = 'demo@gmail.com'
+export const DEMO_SESSION_CAP_SECS = 5 * 60
+
+export function isDemoMember(member: { email: string | null } | null): boolean {
+  return member?.email?.toLowerCase() === DEMO_EMAIL
+}

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import VoiceBars from '@/components/voice-bars'
+import { DEMO_SESSION_CAP_SECS } from '@/lib/auth'
 
 interface Member {
   id: string
@@ -47,7 +48,7 @@ function pickMimeType(): string {
   return ''
 }
 
-export default function ListenClient() {
+export default function ListenClient({ isDemo }: { isDemo: boolean }) {
   const router = useRouter()
   const [members, setMembers] = useState<Member[] | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -63,6 +64,7 @@ export default function ListenClient() {
   const audioCtxRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const freqBinsRef = useRef<Uint8Array<ArrayBuffer> | null>(null)
+  const demoCapTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     fetch('/api/members')
@@ -80,6 +82,7 @@ export default function ListenClient() {
   useEffect(() => {
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current)
+      if (demoCapTimerRef.current) window.clearTimeout(demoCapTimerRef.current)
       audioCtxRef.current?.close().catch(() => {})
       streamRef.current?.getTracks().forEach((t) => t.stop())
     }
@@ -132,6 +135,15 @@ export default function ListenClient() {
         setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000))
       }, 1000)
 
+      if (isDemo) {
+        if (demoCapTimerRef.current) window.clearTimeout(demoCapTimerRef.current)
+        demoCapTimerRef.current = window.setTimeout(() => {
+          if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+            void stopAndUpload()
+          }
+        }, DEMO_SESSION_CAP_SECS * 1000)
+      }
+
       const AudioCtx =
         window.AudioContext ||
         (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
@@ -169,6 +181,10 @@ export default function ListenClient() {
     if (timerRef.current) {
       window.clearInterval(timerRef.current)
       timerRef.current = null
+    }
+    if (demoCapTimerRef.current) {
+      window.clearTimeout(demoCapTimerRef.current)
+      demoCapTimerRef.current = null
     }
     analyserRef.current = null
     freqBinsRef.current = null
@@ -232,6 +248,11 @@ export default function ListenClient() {
           <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
             I&apos;ll listen quietly, and notice what I can.
           </p>
+          {isDemo && (
+            <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue/70 mt-6">
+              Demo sessions are capped at 5 minutes.
+            </p>
+          )}
         </header>
 
         {!members && <p className="font-body text-bea-blue">Loading whānau…</p>}

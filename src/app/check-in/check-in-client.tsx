@@ -7,6 +7,7 @@ import { useConversation, ConversationProvider } from '@elevenlabs/react';
 import PageBackground from '@/components/page-background';
 import VoiceBars from '@/components/voice-bars';
 import FamilyCheckIn from './family-check-in';
+import { DEMO_SESSION_CAP_SECS } from '@/lib/auth';
 
 interface TranscriptMessage {
   role: 'user' | 'agent';
@@ -36,7 +37,7 @@ function displayRole(role: string): string | null {
   return null;
 }
 
-function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMember | null; individualVision: string | null }) {
+function CheckInUI({ authedMember, individualVision, isDemo }: { authedMember: AuthedMember | null; individualVision: string | null; isDemo: boolean }) {
   const router = useRouter();
   const [members, setMembers] = useState<Member[] | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -50,6 +51,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
   const [draft, setDraft] = useState('');
   const transcriptRef = useRef<TranscriptMessage[]>([]);
   const startTimeRef = useRef<number>(0);
+  const demoCapTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (authedMember) return;
@@ -96,6 +98,12 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
       setStreamingAgentText('');
       startTimeRef.current = Date.now();
       setStatusText(inputMode === 'chat' ? 'Kia ora.' : 'I am here.');
+      if (isDemo) {
+        if (demoCapTimerRef.current) window.clearTimeout(demoCapTimerRef.current);
+        demoCapTimerRef.current = window.setTimeout(() => {
+          if (conversation.status === 'connected') conversation.endSession();
+        }, DEMO_SESSION_CAP_SECS * 1000);
+      }
     },
     onMessage: (msg: { source: 'user' | 'ai'; message: string }) => {
       const entry: TranscriptMessage = {
@@ -117,6 +125,10 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
       else if (part.type === 'stop') setStreamingAgentText('');
     },
     onDisconnect: async () => {
+      if (demoCapTimerRef.current) {
+        window.clearTimeout(demoCapTimerRef.current);
+        demoCapTimerRef.current = null;
+      }
       setStatusText('Taking note of what I heard...');
       const isMember = selection.type === 'member';
       await saveTranscript(
@@ -276,6 +288,11 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
           <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
             I&rsquo;m ready for your individual check-in when you are.
           </p>
+          {isDemo && (
+            <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue/70 mt-6">
+              Demo sessions are capped at 5 minutes.
+            </p>
+          )}
         </header>
 
         <button
@@ -646,18 +663,18 @@ function ModeChooser() {
   );
 }
 
-function CheckInRouter({ authedMember, individualVision, householdVision }: { authedMember: AuthedMember | null; individualVision: string | null; householdVision: string | null }) {
+function CheckInRouter({ authedMember, individualVision, householdVision, isDemo }: { authedMember: AuthedMember | null; individualVision: string | null; householdVision: string | null; isDemo: boolean }) {
   const searchParams = useSearchParams();
   const mode = searchParams.get('mode');
 
   if (mode === 'family') {
-    return <FamilyCheckIn householdVision={householdVision} />;
+    return <FamilyCheckIn householdVision={householdVision} isDemo={isDemo} />;
   }
 
   if (mode === 'individual') {
     return (
       <ConversationProvider>
-        <CheckInUI authedMember={authedMember} individualVision={individualVision} />
+        <CheckInUI authedMember={authedMember} individualVision={individualVision} isDemo={isDemo} />
       </ConversationProvider>
     );
   }
@@ -665,10 +682,10 @@ function CheckInRouter({ authedMember, individualVision, householdVision }: { au
   return <ModeChooser />;
 }
 
-export default function CheckInClient({ authedMember, individualVision, householdVision }: { authedMember: AuthedMember | null; individualVision: string | null; householdVision: string | null }) {
+export default function CheckInClient({ authedMember, individualVision, householdVision, isDemo }: { authedMember: AuthedMember | null; individualVision: string | null; householdVision: string | null; isDemo: boolean }) {
   return (
     <Suspense fallback={null}>
-      <CheckInRouter authedMember={authedMember} individualVision={individualVision} householdVision={householdVision} />
+      <CheckInRouter authedMember={authedMember} individualVision={individualVision} householdVision={householdVision} isDemo={isDemo} />
     </Suspense>
   );
 }
