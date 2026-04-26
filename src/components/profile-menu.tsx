@@ -71,7 +71,8 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
       Promise.resolve().then(() => setIsIOSStandaloneNeeded(ios && !standalone))
       return
     }
-    navigator.serviceWorker.ready
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/', updateViaCache: 'none' })
       .then((reg) => reg.pushManager.getSubscription())
       .then((sub) => {
         setPushSupported(true)
@@ -80,7 +81,9 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
         setEndpoint(sub.endpoint)
         return getPrefs(sub.endpoint).then((p) => setPrefs(p))
       })
-      .catch(() => undefined)
+      .catch((err) => {
+        console.error('SW register failed:', err)
+      })
   }, [])
 
   const enablePush = async () => {
