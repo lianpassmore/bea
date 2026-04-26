@@ -87,7 +87,7 @@ export default function PushNotificationManager() {
     <div className="border-t border-bea-charcoal/10 pt-6">
       <div className="space-y-4">
         <p className="font-body text-base md:text-lg text-bea-olive leading-relaxed">
-          I can let you know when I am beginning or ending a household session.
+          I can let you know when I am beginning or ending a whānau session.
         </p>
         <button
           onClick={subscribe}

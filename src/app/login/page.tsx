@@ -52,17 +52,17 @@ export default function LoginPage() {
         
         <header className="text-center mb-10 space-y-3">
           <h1 className="font-serif italic text-4xl text-bea-charcoal">
-            Welcome.
+            Haere mai.
           </h1>
           <p className="font-body text-bea-olive">
-            Please sign in to join your family.
+            Please sign in to join your whānau.
           </p>
         </header>
 
         {stage === 'sent' ? (
           <div className="text-center space-y-6 animate-fade-in">
             <div className="w-12 h-[1px] bg-bea-amber mx-auto mb-8"></div>
-            <p className="font-serif text-2xl text-bea-charcoal leading-snug">
+            <p className="font-body text-2xl text-bea-charcoal leading-snug">
               I have sent a note to your email.
             </p>
             <p className="font-body text-bea-olive leading-relaxed">
@@ -106,7 +106,7 @@ export default function LoginPage() {
                   placeholder="Your email address..."
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-transparent border-b border-bea-charcoal/20 pb-3 font-serif text-xl text-bea-charcoal placeholder:text-bea-blue/40 focus:outline-none focus:border-bea-amber transition-colors text-center"
+                  className="w-full bg-transparent border-b border-bea-charcoal/20 pb-3 font-body text-xl text-bea-charcoal placeholder:text-bea-blue/40 focus:outline-none focus:border-bea-amber transition-colors text-center"
                 />
 
                 <div className="flex flex-col items-center gap-4 pt-4">

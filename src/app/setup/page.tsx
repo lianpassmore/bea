@@ -100,7 +100,7 @@ export default function SetupPage() {
                   I listen to you and the people you live with. To do this, I keep a few things.
                 </p>
                 <p className="text-bea-olive">
-                  I keep a voice print so I can recognise you without you having to introduce yourself. I keep summaries of our conversations, and notice patterns in how the house feels.
+                  I keep a voice print so I can recognise you without you having to introduce yourself. I keep summaries of our kōrero, and notice patterns in how the house feels.
                 </p>
                 <p className="text-bea-blue">
                   You can ask me to remove you at any time. If you do, I will forget your voice, though past summaries will remain part of the house&apos;s memory.
@@ -145,7 +145,7 @@ export default function SetupPage() {
                 onChange={(e) => setName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && name.trim() && handleName()}
                 placeholder="Your name..."
-                className="w-full bg-transparent border-b border-bea-charcoal/20 pb-3 md:pb-4 font-serif text-2xl md:text-3xl text-bea-charcoal placeholder:text-bea-blue/40 focus:outline-none focus:border-bea-amber transition-colors rounded-none"
+                className="w-full bg-transparent border-b border-bea-charcoal/20 pb-3 md:pb-4 font-body text-2xl md:text-3xl text-bea-charcoal placeholder:text-bea-blue/40 focus:outline-none focus:border-bea-amber transition-colors rounded-none"
                 autoComplete="off"
               />
             </div>
@@ -167,7 +167,7 @@ export default function SetupPage() {
         {step === 'creating' && (
           <div className="flex flex-col flex-1 justify-center items-start">
              {/* Replaced the spinner with a quiet, pulsing text state */}
-            <p className="font-serif text-xl md:text-2xl text-bea-blue animate-pulse">
+            <p className="font-body text-xl md:text-2xl text-bea-blue animate-pulse">
               Taking note...
             </p>
           </div>
@@ -211,7 +211,7 @@ export default function SetupPage() {
             
             {/* The prompt sits quietly in the middle of the screen */}
             <div className="flex-1 flex flex-col justify-center">
-              <p className="font-serif text-xl md:text-3xl text-bea-charcoal leading-snug transition-opacity duration-1000">
+              <p className="font-body text-xl md:text-3xl text-bea-charcoal leading-snug transition-opacity duration-1000">
                 {PROMPTS[promptIndex]}
               </p>
             </div>
@@ -235,7 +235,7 @@ export default function SetupPage() {
         {/* ── ENROLLING ─────────────────────────────── */}
         {step === 'enrolling' && (
           <div className="flex flex-col flex-1 justify-center items-start">
-            <p className="font-serif text-xl md:text-2xl text-bea-blue animate-pulse">
+            <p className="font-body text-xl md:text-2xl text-bea-blue animate-pulse">
               Learning your voice...
             </p>
           </div>
@@ -263,7 +263,7 @@ export default function SetupPage() {
                 className="group inline-flex items-center gap-4 font-body text-base md:text-lg text-bea-charcoal transition-opacity hover:opacity-70"
               >
                 <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-16"></span>
-                Talk with me now
+                Kōrero with me now
               </button>
               
               <button

@@ -146,9 +146,52 @@ export default async function Home() {
     isPrimary ? minutesUsedThisMonth() : Promise.resolve(null),
   ])
 
+  type NotifRow = {
+    id: string
+    briefing: string
+    crisis_level: 'concerned' | 'urgent'
+    created_at: string
+    affected: { name: string } | { name: string }[] | null
+  }
+  let notifications: {
+    id: string
+    briefing: string
+    crisis_level: 'concerned' | 'urgent'
+    created_at: string
+    affected_member_name: string
+  }[] = []
+  if (member) {
+    const { data } = await supabase
+      .from('crisis_notifications')
+      .select(
+        `id, briefing, crisis_level, created_at,
+         affected:members!affected_member_id(name)`,
+      )
+      .eq('contact_member_id', member.id)
+      .is('seen_at', null)
+      .order('created_at', { ascending: false })
+    notifications = ((data ?? []) as unknown as NotifRow[]).map((n) => {
+      const affectedName = Array.isArray(n.affected)
+        ? n.affected[0]?.name
+        : n.affected?.name
+      return {
+        id: n.id,
+        briefing: n.briefing,
+        crisis_level: n.crisis_level,
+        created_at: n.created_at,
+        affected_member_name: affectedName ?? 'A family member',
+      }
+    })
+  }
+
   return (
     <HomeClient
+      memberId={member?.id ?? null}
       memberName={member?.name ?? null}
+      avatarUrl={member?.avatar_url ?? null}
+      notifications={notifications}
+      consentGiven={member?.consent_given ?? false}
+      consentGivenAt={member?.consent_given_at ?? null}
       dailyLine={getDailyLine()}
       currentGoal={currentGoal}
       whanauGoal={whanauGoal}

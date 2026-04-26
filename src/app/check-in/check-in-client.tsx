@@ -175,7 +175,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
             <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue mb-2 sm:mb-3">
               Your vision
             </p>
-            <p className="font-serif italic text-lg md:text-xl text-bea-charcoal leading-snug">
+            <p className="font-body italic text-lg md:text-xl text-bea-charcoal leading-snug">
               &ldquo;{individualVision}&rdquo;
             </p>
           </div>
@@ -183,7 +183,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
 
         <header className="mb-10 md:mb-16">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
-            Hello, {authedMember.name}.
+            Kia ora, {authedMember.name}.
           </h1>
           <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
             I&rsquo;m ready for your individual check-in when you are.
@@ -222,7 +222,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
 
         {loadError && (
           <p className="font-body text-base md:text-lg text-bea-clay">
-            I can't seem to find your family right now. Please wait a moment.
+            I can't seem to find your whānau right now. Please wait a moment.
           </p>
         )}
 
@@ -237,7 +237,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
                   className="group flex items-center justify-between py-2.5 border-b border-bea-charcoal/10 hover:border-bea-amber/40 transition-colors duration-500"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-serif text-lg md:text-2xl text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
+                    <span className="font-body text-lg md:text-2xl text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
                       {m.name}
                     </span>
                     {roleLabel && (
@@ -258,7 +258,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
               className="group flex items-center justify-between py-2.5 border-b border-bea-charcoal/10 hover:border-bea-amber/40 transition-colors duration-500 mt-4"
             >
                <div className="flex items-center gap-3">
-                  <span className="font-serif text-lg md:text-2xl text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
+                  <span className="font-body text-lg md:text-2xl text-bea-charcoal group-hover:text-bea-amber transition-colors duration-500">
                     A guest
                   </span>
                   <span className="font-ui text-xs md:text-sm text-bea-blue/50">
@@ -287,7 +287,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
         </h1>
         {isConnected && (
           <p className="font-body text-base md:text-lg text-bea-olive italic transition-opacity duration-500">
-             {conversation.isSpeaking ? 'I am speaking.' : 'I am listening.'}
+             {conversation.isSpeaking ? 'Kōrero. I am speaking.' : 'Whakarongo. I am listening.'}
           </p>
         )}
       </div>
@@ -322,7 +322,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
             ${isConnecting ? 'opacity-0' : 'opacity-100'}
           `}
         >
-          {isConnected ? 'Finish conversation' : 'Cancel'}
+          {isConnected ? 'Finish kōrero' : 'Cancel'}
         </button>
       </div>
       
@@ -336,7 +336,7 @@ function ModeChooser() {
       <PageBackground variant="witness" />
 
       <div className="w-full max-w-xs flex flex-col items-center gap-10">
-        <p className="font-serif text-lg md:text-xl text-bea-olive text-center">
+        <p className="font-body text-lg md:text-xl text-bea-olive text-center">
           Who&rsquo;s here today?
         </p>
 
@@ -345,7 +345,7 @@ function ModeChooser() {
             href="/check-in?mode=individual"
             className="py-5 text-center rounded-full border border-bea-charcoal/20 bg-bea-milk/60 hover:bg-bea-amber/10 hover:border-bea-amber/60 transition-colors duration-300"
           >
-            <span className="font-serif italic text-xl md:text-2xl text-bea-charcoal">
+            <span className="font-body italic text-xl md:text-2xl text-bea-charcoal">
               Just me
             </span>
           </Link>
@@ -353,8 +353,8 @@ function ModeChooser() {
             href="/check-in?mode=family"
             className="py-5 text-center rounded-full border border-bea-charcoal/20 bg-bea-milk/60 hover:bg-bea-amber/10 hover:border-bea-amber/60 transition-colors duration-300"
           >
-            <span className="font-serif italic text-xl md:text-2xl text-bea-charcoal">
-              Family
+            <span className="font-body italic text-xl md:text-2xl text-bea-charcoal">
+              Whānau
             </span>
           </Link>
         </div>

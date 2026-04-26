@@ -9,7 +9,12 @@ import FooterBar from "@/components/footer-bar";
 import ConsentModal from "@/components/consent-modal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const lora = Lora({ subsets: ["latin"], variable: "--font-lora" });
+const lora = Lora({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  style: ["normal", "italic"],
+  variable: "--font-lora",
+});
 const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
   weight: "400",
@@ -19,7 +24,7 @@ const dmSerif = DM_Serif_Display({
 
 export const metadata: Metadata = {
   title: "Bea",
-  description: "A quiet presence in the life of a family.", // Updated to match positioning
+  description: "A quiet presence in the life of a whānau.", // Updated to match positioning
 };
 
 export default async function RootLayout({
@@ -30,6 +35,7 @@ export default async function RootLayout({
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") ?? "";
   const isFullViewport = pathname.startsWith("/audit");
+  const isHome = pathname === "/" || pathname === "";
 
   const supabase = await createClient();
   const {
@@ -107,7 +113,7 @@ export default async function RootLayout({
             {/* pb-28 leaves room for the fixed footer tab bar. */}
             <main className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto min-h-screen px-5 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 md:py-10 pb-28 md:pb-32 flex flex-col relative">
 
-              {user && (
+              {user && !isHome && (
                 <HeaderBar
                   memberId={memberId}
                   memberName={memberName}

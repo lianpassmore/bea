@@ -29,7 +29,7 @@ const MODE_META = {
     description: 'A dedicated moment with one person.',
   },
   group: {
-    label: 'Family check-in',
+    label: 'Whānau kōrero',
     description: 'A moment to speak with everyone present.',
   },
 }
@@ -122,7 +122,7 @@ export default function ScheduleClient({ isPrimary }: { isPrimary: boolean }) {
               placeholder="e.g. Sunday dinner..."
               value={form.label}
               onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-              className="w-full bg-transparent border-b border-bea-charcoal/20 pb-3 md:pb-4 font-serif text-xl md:text-2xl text-bea-charcoal placeholder:text-bea-blue/40 focus:outline-none focus:border-bea-amber transition-colors rounded-none"
+              className="w-full bg-transparent border-b border-bea-charcoal/20 pb-3 md:pb-4 font-body text-xl md:text-2xl text-bea-charcoal placeholder:text-bea-blue/40 focus:outline-none focus:border-bea-amber transition-colors rounded-none"
             />
           </div>
 
@@ -133,7 +133,7 @@ export default function ScheduleClient({ isPrimary }: { isPrimary: boolean }) {
               type="time"
               value={form.time}
               onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
-              className="bg-transparent border-b border-bea-charcoal/20 pb-2 font-serif text-xl md:text-2xl text-bea-charcoal focus:outline-none focus:border-bea-amber w-32 rounded-none"
+              className="bg-transparent border-b border-bea-charcoal/20 pb-2 font-body text-xl md:text-2xl text-bea-charcoal focus:outline-none focus:border-bea-amber w-32 rounded-none"
             />
           </div>
 
@@ -306,7 +306,7 @@ export default function ScheduleClient({ isPrimary }: { isPrimary: boolean }) {
       {isPrimary && schedules.length > 0 && (
         <div className="mt-12 md:mt-20 pt-6 md:pt-8 border-t border-bea-charcoal/10">
           <p className="font-body text-base md:text-lg text-bea-olive leading-relaxed mb-4">
-            If you&apos;re leaving a device in the room for me to listen, you can open the household view.
+            If you&apos;re leaving a device in the room for me to listen, you can open the whānau view.
           </p>
           <Link
             href="/household"

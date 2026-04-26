@@ -53,10 +53,10 @@ export default function ConsentModal({ memberName }: { memberName: string | null
 
         <div className="space-y-5 font-body text-bea-charcoal leading-relaxed">
           <p>
-            Bea is a quiet presence in your home. With your permission, Bea will listen during the times your family chooses, so she can understand the rhythm of your home and offer reflections that help.
+            Bea is a quiet presence in your home. With your permission, Bea will listen during the times your whānau chooses, so she can understand the rhythm of your home and offer reflections that help.
           </p>
           <p>
-            When Bea is on, she records conversations and turns them into transcripts. These are stored privately for your family and used to notice patterns, suggest moments of connection, and check in with each of you.
+            When Bea is on, she records kōrero and turns them into transcripts. These are stored privately for your whānau and used to notice patterns, suggest moments of connection, and check in with each of you.
           </p>
           <p>
             Bea is not a crisis service. She is also not a substitute for professional support. If you or someone you love is in distress, please reach for the people and services who can be there in person.

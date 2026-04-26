@@ -18,7 +18,10 @@
 @layer base {
   /* Enforces the guideline: "line height 1.6-1.8. Builds trust through readability." */
   body {
-    line-height: 1.7; 
+    line-height: 1.7;
+  }
+  h1, h2, h3, h4, h5, h6, strong, b {
+    font-weight: 400;
   }
 }
 
@@ -35,5 +38,14 @@
 
 .animate-fade-in {
   /* Changed from 0.35s to 0.8s for radical slowness */
-  animation: fade-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; 
+  animation: fade-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.25; transform: scale(0.9); }
+  50%      { opacity: 1;    transform: scale(1); }
+}
+
+.animate-breathe {
+  animation: breathe 2.4s ease-in-out infinite;
 }

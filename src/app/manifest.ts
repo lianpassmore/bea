@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Bea',
     short_name: 'Bea',
-    description: 'A quiet presence in the life of a family.',
+    description: 'A quiet presence in the life of a whānau.',
     start_url: '/',
     display: 'standalone',
     background_color: '#F5F1E8',

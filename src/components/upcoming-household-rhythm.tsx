@@ -16,7 +16,7 @@ const DAYS_OF_WEEK = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 const MODE_PHRASE: Record<Schedule['mode'], string> = {
   listen: 'will be listening quietly',
   checkin: 'will hold an individual check-in',
-  group: 'will hold a household conversation',
+  group: 'will hold a whānau kōrero',
 }
 
 function nextHouseholdSession(schedules: Schedule[]) {

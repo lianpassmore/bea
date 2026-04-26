@@ -97,8 +97,8 @@ async function notify(payload: { title: string; body: string; tag?: string; url?
 
 const MODE_LABEL = {
   listen: 'Listen quietly',
-  checkin: 'Individual conversation',
-  group: 'Household conversation',
+  checkin: 'Individual kōrero',
+  group: 'Whānau kōrero',
 }
 
 type ActiveSession = { label: string; mode: 'listen' | 'checkin' | 'group' }
@@ -193,7 +193,7 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
     onConnect: () => {
       setSessionState('live')
       notify({
-        title: 'Bea has begun a household conversation',
+        title: 'Bea has begun a whānau kōrero',
         body: 'She is in the room now.',
         tag: 'bea-household',
         category: 'start',
@@ -221,7 +221,7 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
         }).catch(console.error)
       }
       notify({
-        title: 'Household conversation has ended',
+        title: 'Whānau kōrero has ended',
         body: 'Bea is taking note of what she heard.',
         tag: 'bea-household',
         category: 'end',
@@ -273,7 +273,7 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
         warnedRef.current.add(key)
         const phrase = s.mode === 'listen'
           ? 'Bea will start listening quietly in 5 minutes'
-          : 'Bea will start a household conversation in 5 minutes'
+          : 'Bea will start a whānau kōrero in 5 minutes'
         notify({ title: phrase, body: s.label, tag: `bea-soon-${s.id}`, category: 'advance' })
       }
 
@@ -329,9 +329,9 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
       {householdVision && (
         <div className="w-full max-w-xl mx-auto pt-6 md:pt-10 px-6">
           <p className="font-ui text-xs uppercase tracking-wide text-bea-blue mb-2">
-            This family is growing toward
+            This whānau is growing toward
           </p>
-          <p className="font-serif text-base md:text-lg text-bea-charcoal italic leading-relaxed">
+          <p className="font-body text-base md:text-lg text-bea-charcoal italic leading-relaxed">
             {householdVision}
           </p>
         </div>
@@ -344,14 +344,14 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
         <div className="flex flex-col items-center w-full max-w-md animate-fade-in">
           
           <div className="space-y-3 md:space-y-4 mb-12 md:mb-20">
-            <p className="font-serif text-5xl md:text-8xl text-bea-charcoal tracking-tight">
+            <p className="font-body text-5xl md:text-8xl text-bea-charcoal tracking-tight">
               {time}
             </p>
             <p className="font-body text-base md:text-xl text-bea-olive">
               {new Date().toLocaleDateString('en-NZ', { weekday: 'long', month: 'long', day: 'numeric' })}
             </p>
             <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
-              Hello, family. I&apos;m ready for your check-in when you are.
+              Kia ora, whānau. I&apos;m ready for your check-in when you are.
             </p>
           </div>
 
@@ -399,8 +399,8 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
           <div className="w-4 h-4 rounded-full bg-bea-amber/60 animate-[pulse_4s_ease-in-out_infinite] shadow-[0_0_15px_rgba(214,168,90,0.3)]"></div>
           
           <div className="space-y-4">
-            <p className="font-serif text-2xl md:text-3xl text-bea-charcoal">{activeSession.label}.</p>
-            <p className="font-body text-base md:text-lg text-bea-olive">I am listening to the room.</p>
+            <p className="font-body text-2xl md:text-3xl text-bea-charcoal">{activeSession.label}.</p>
+            <p className="font-body text-base md:text-lg text-bea-olive">Whakarongo. I am listening to the room.</p>
             {endsAt && (
               <p className="font-ui text-sm text-bea-blue pt-2">
                 We will finish at {new Date(endsAt).toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: true })}
@@ -421,7 +421,7 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
       {/* ── CONNECTING STATE ───────────────────────────────── */}
       {sessionState === 'connecting' && (
         <div className="flex flex-col items-center animate-fade-in space-y-8">
-          <p className="font-serif text-2xl md:text-3xl text-bea-blue animate-pulse">Arriving...</p>
+          <p className="font-body text-2xl md:text-3xl text-bea-blue animate-pulse">Arriving...</p>
         </div>
       )}
 
@@ -437,9 +437,9 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
           />
 
           <div className="space-y-4">
-            <p className="font-serif text-2xl md:text-3xl text-bea-charcoal">{activeSession.label}.</p>
+            <p className="font-body text-2xl md:text-3xl text-bea-charcoal">{activeSession.label}.</p>
             <p className="font-body text-base md:text-lg text-bea-olive italic transition-opacity duration-500">
-              {conversation.isSpeaking ? 'I am speaking.' : 'I am listening.'}
+              {conversation.isSpeaking ? 'Kōrero. I am speaking.' : 'Whakarongo. I am listening.'}
             </p>
           </div>
 
@@ -448,7 +448,7 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
             className="group inline-flex items-center gap-4 font-body text-base md:text-lg text-bea-charcoal transition-opacity hover:opacity-70 pt-8"
           >
             <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-16"></span>
-            Finish conversation
+            Finish kōrero
           </button>
         </div>
       )}
@@ -456,7 +456,7 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
       {/* ── ENDING STATE ───────────────────────────────────── */}
       {sessionState === 'ending' && (
         <div className="flex flex-col items-center animate-fade-in space-y-4">
-          <p className="font-serif text-2xl md:text-3xl text-bea-charcoal">We are finished.</p>
+          <p className="font-body text-2xl md:text-3xl text-bea-charcoal">We are finished.</p>
           <p className="font-body text-base md:text-lg text-bea-olive">Taking note of what I heard...</p>
         </div>
       )}

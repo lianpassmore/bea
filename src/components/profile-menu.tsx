@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { X, Camera, ChevronRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
@@ -36,6 +37,7 @@ type Props = {
   notifications: CrisisNotification[]
   consentGiven: boolean
   consentGivenAt: string | null
+  compact?: boolean
 }
 
 function initialsFor(name: string | null) {
@@ -44,14 +46,14 @@ function initialsFor(name: string | null) {
   return words.map((w) => w[0]?.toUpperCase()).join('') || name[0]?.toUpperCase() || '·'
 }
 
-export default function ProfileMenu({ memberName, avatarUrl, notifications: initialNotifs, consentGiven, consentGivenAt }: Props) {
+export default function ProfileMenu({ memberName, avatarUrl, notifications: initialNotifs, consentGiven, consentGivenAt, compact = false }: Props) {
   const router = useRouter()
   const supabase = createClient()
   const [open, setOpen] = useState(false)
   const [photo, setPhoto] = useState<string | null>(avatarUrl)
   const [uploading, setUploading] = useState(false)
   const [photoMenuOpen, setPhotoMenuOpen] = useState(false)
-  const [notifs, setNotifs] = useState(initialNotifs)
+  const [notifs] = useState(initialNotifs)
   const [signingOut, setSigningOut] = useState(false)
   const [withdrawStage, setWithdrawStage] = useState<'idle' | 'confirm' | 'submitting'>('idle')
   const [prefs, setPrefs] = useState<NotificationPrefs | null>(null)
@@ -132,11 +134,6 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
     return () => document.removeEventListener('keydown', onKey)
   }, [open])
 
-  const dismissNotif = async (id: string) => {
-    setNotifs((prev) => prev.filter((n) => n.id !== id))
-    await fetch(`/api/crisis-notifications/${id}/seen`, { method: 'POST' }).catch(console.error)
-  }
-
   const onPickPhoto = async (file: File) => {
     setUploading(true)
     try {
@@ -202,7 +199,9 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
         type="button"
         onClick={() => setOpen(true)}
         aria-label={hasUnread ? `Profile, ${notifs.length} new` : 'Profile'}
-        className="relative inline-flex items-center justify-center w-12 h-12 rounded-full overflow-hidden bg-bea-amber/15 text-bea-charcoal ring-1 ring-bea-olive hover:opacity-80 transition-opacity duration-300"
+        className={`relative inline-flex items-center justify-center ${
+          compact ? 'w-10 h-10' : 'w-12 h-12'
+        } rounded-full overflow-hidden bg-bea-amber/15 text-bea-charcoal ring-1 ring-bea-olive hover:opacity-80 transition-opacity duration-300`}
       >
         {photo ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -218,7 +217,7 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
         )}
       </button>
 
-      {open && (
+      {open && createPortal(
         <div className="fixed inset-0 z-50">
           <div
             onClick={() => setOpen(false)}
@@ -246,7 +245,7 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} alt={memberName ?? 'Profile'} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="font-serif text-2xl text-bea-charcoal">{initials}</span>
+                    <span className="font-body text-2xl text-bea-charcoal">{initials}</span>
                   )}
                 </div>
                 <div className="flex flex-col gap-1.5 min-w-0">
@@ -314,36 +313,13 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
                 </div>
               </section>
 
-              <Section title="Messages from Bea">
-                {notifs.length === 0 ? (
-                  <p className="font-body text-bea-blue leading-relaxed">
-                    Nothing waiting for you right now.
-                  </p>
-                ) : (
-                  <ul className="space-y-5">
-                    {notifs.map((n) => (
-                      <li
-                        key={n.id}
-                        className={`border-l-2 pl-4 ${
-                          n.crisis_level === 'urgent' ? 'border-bea-clay' : 'border-bea-clay/40'
-                        }`}
-                      >
-                        <p className="font-serif text-base text-bea-charcoal mb-1">
-                          About {n.affected_member_name}
-                        </p>
-                        <p className="font-body text-bea-charcoal leading-relaxed mb-3">
-                          {n.briefing}
-                        </p>
-                        <button
-                          onClick={() => dismissNotif(n.id)}
-                          className="font-ui text-xs uppercase tracking-wide text-bea-blue hover:text-bea-charcoal transition-colors"
-                        >
-                          I&apos;ve seen this
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+              <Section title="About Bea">
+                <p className="font-body text-bea-charcoal leading-relaxed">
+                  Bea is a quiet companion for your whānau, a voice-first coach for the everyday work of staying close.
+                </p>
+                <p className="font-body text-bea-charcoal leading-relaxed mt-3">
+                  She listens during the moments that matter, and helps you find your way back to each other.
+                </p>
               </Section>
 
               <Section title="Notifications">
@@ -415,7 +391,7 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
 
                 {withdrawStage === 'confirm' && (
                   <div className="space-y-5">
-                    <p className="font-serif text-lg text-bea-charcoal leading-snug">
+                    <p className="font-body text-lg text-bea-charcoal leading-snug">
                       Are you sure?
                     </p>
                     <p className="font-body text-sm text-bea-olive leading-relaxed">
@@ -484,7 +460,8 @@ export default function ProfileMenu({ memberName, avatarUrl, notifications: init
               </button>
             </div>
           </aside>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

@@ -202,11 +202,11 @@ export default function ListenClient() {
           </p>
         </header>
 
-        {!members && <p className="font-body text-bea-blue">Loading family…</p>}
+        {!members && <p className="font-body text-bea-blue">Loading whānau…</p>}
 
         {members && members.length === 0 && (
           <p className="font-body text-bea-clay">
-            No family on record yet. Add members first, then come back.
+            No whānau on record yet. Add members first, then come back.
           </p>
         )}
 
@@ -246,7 +246,7 @@ export default function ListenClient() {
                         : 'bg-bea-milk border-bea-charcoal/25 text-bea-charcoal'
                     }`}
                   >
-                    <span className="font-serif text-lg md:text-xl leading-tight">
+                    <span className="font-body text-lg md:text-xl leading-tight">
                       {m.name}
                       {!consented && (
                         <span className="text-bea-charcoal/60" aria-hidden>*</span>
@@ -291,7 +291,7 @@ export default function ListenClient() {
       <div className="flex flex-col items-center justify-between flex-1 py-12 md:py-20 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <div className="text-center w-full space-y-4">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
-            I am listening.
+            Whakarongo. I am listening.
           </h1>
           <p className="font-body text-base md:text-lg text-bea-olive italic">
             {formatElapsed(elapsed)}

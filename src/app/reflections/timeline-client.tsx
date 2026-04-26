@@ -26,7 +26,7 @@ const STEP_DAYS = 30
 
 const KIND_META: Record<TimelineEventKind, { label: string; icon: LucideIcon }> = {
   individual: { label: 'Individual check-in', icon: User },
-  family: { label: 'Family check-in', icon: Users },
+  family: { label: 'Whānau kōrero', icon: Users },
   listening: { label: 'Bea was listening', icon: AudioLines },
 }
 
@@ -102,13 +102,13 @@ export default function TimelineClient({
       />
 
       <InsightsSection
-        title="Family insights"
+        title="Whānau insights"
         description="How the room felt when I listened in."
         icon={Users}
         accent="olive"
         notes={familyNotes}
         renderItem={(e) => <FamilyNote event={e} />}
-        emptyBody="I haven't listened to a family moment yet. When I do, I'll leave a few words about how the room felt."
+        emptyBody="I haven't listened to a whānau moment yet. When I do, I'll leave a few words about how the room felt."
         emptyCta={{ href: '/listen', label: 'Begin listening' }}
         nowMs={nowMs}
       />
@@ -261,14 +261,14 @@ function IndividualNote({ event }: { event: TimelineEvent }) {
           {formatDate(event.timestamp)}
         </p>
         <p className="font-ui text-xs text-bea-olive/70 italic">
-          {isListening ? 'After I listened' : 'After we spoke'}
+          {isListening ? 'After I listened' : 'After our kōrero'}
         </p>
       </div>
       <p className="font-body text-bea-charcoal text-base md:text-lg leading-relaxed whitespace-pre-wrap">
         {event.reflection}
       </p>
       {event.emotional_tone && (
-        <p className="font-serif text-sm text-bea-olive italic mt-4">
+        <p className="font-body text-sm text-bea-olive italic mt-4">
           {event.emotional_tone}
         </p>
       )}
@@ -289,7 +289,7 @@ function FamilyNote({ event }: { event: TimelineEvent }) {
           {formatDate(event.timestamp)}
         </p>
         <p className="font-ui text-xs text-bea-olive/70 italic">
-          {event.kind === 'family' ? 'After our family check-in' : 'After I listened'}
+          {event.kind === 'family' ? 'After our whānau kōrero' : 'After I listened'}
         </p>
       </div>
       {headline && (
@@ -298,7 +298,7 @@ function FamilyNote({ event }: { event: TimelineEvent }) {
         </p>
       )}
       {event.family_tone && (
-        <p className="font-serif text-sm text-bea-olive italic mt-4">
+        <p className="font-body text-sm text-bea-olive italic mt-4">
           {event.family_tone}
         </p>
       )}
@@ -492,8 +492,8 @@ function TimelineRow({
         ) : (
           <p className="font-body text-bea-blue/80 italic text-sm md:text-base">
             {event.kind === 'individual'
-              ? 'A quiet conversation. I have not yet written about this one.'
-              : 'I sat with your family.'}
+              ? 'A quiet kōrero. I have not yet written about this one.'
+              : 'I sat with your whānau.'}
           </p>
         )}
       </button>
@@ -507,7 +507,7 @@ function TimelineRow({
           )}
 
           {event.emotional_tone && (
-            <p className="font-serif text-sm md:text-base text-bea-olive italic">
+            <p className="font-body text-sm md:text-base text-bea-olive italic">
               {event.emotional_tone}
             </p>
           )}
@@ -521,7 +521,7 @@ function TimelineRow({
           )}
 
           {event.kind !== 'individual' && event.family_summary && (
-            <DetailNote label="The family, together" body={event.family_summary} />
+            <DetailNote label="The whānau, together" body={event.family_summary} />
           )}
 
           {event.kind !== 'individual' && event.family_themes.length > 0 && (
@@ -529,7 +529,7 @@ function TimelineRow({
           )}
 
           {event.kind !== 'individual' && event.family_tone && (
-            <p className="font-serif text-sm md:text-base text-bea-olive italic">
+            <p className="font-body text-sm md:text-base text-bea-olive italic">
               {event.family_tone}
             </p>
           )}

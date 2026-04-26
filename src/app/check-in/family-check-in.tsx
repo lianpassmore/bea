@@ -260,9 +260,9 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
         {householdVision && (
           <div className="mb-8 md:mb-12 pb-6 md:pb-8 border-b border-bea-charcoal/20">
             <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-amber mb-2 sm:mb-3">
-              Family vision
+              Whānau vision
             </p>
-            <p className="font-serif italic text-lg md:text-xl text-bea-charcoal leading-snug">
+            <p className="font-body italic text-lg md:text-xl text-bea-charcoal leading-snug">
               &ldquo;{householdVision}&rdquo;
             </p>
           </div>
@@ -270,18 +270,18 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
 
         <header className="mb-8 md:mb-12">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
-            Hello, family.
+            Kia ora, whānau.
           </h1>
           <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
-            A conversation for everyone in the room. Who&apos;s here?
+            A kōrero for everyone in the room. Who&apos;s here?
           </p>
         </header>
 
-        {!members && <p className="font-body text-bea-blue">Loading family…</p>}
+        {!members && <p className="font-body text-bea-blue">Loading whānau…</p>}
 
         {members && members.length === 0 && (
           <p className="font-body text-bea-clay">
-            No family on record yet. Add members first, then come back.
+            No whānau on record yet. Add members first, then come back.
           </p>
         )}
 
@@ -321,7 +321,7 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
                         : 'bg-bea-milk border-bea-charcoal/25 text-bea-charcoal'
                     }`}
                   >
-                    <span className="font-serif text-lg md:text-xl leading-tight">
+                    <span className="font-body text-lg md:text-xl leading-tight">
                       {m.name}
                       {!consented && (
                         <span className="text-bea-charcoal/60" aria-hidden>*</span>
@@ -363,7 +363,7 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
           </h1>
           {isConnected && (
             <p className="font-body text-base md:text-lg text-bea-olive italic">
-              {conversation.isSpeaking ? 'I am speaking.' : 'I am listening.'}
+              {conversation.isSpeaking ? 'Kōrero. I am speaking.' : 'Whakarongo. I am listening.'}
             </p>
           )}
         </div>
@@ -389,7 +389,7 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
           }}
           className="font-ui text-sm text-bea-blue hover:text-bea-charcoal transition-colors duration-500"
         >
-          {isConnected ? 'Finish conversation' : 'Cancel'}
+          {isConnected ? 'Finish kōrero' : 'Cancel'}
         </button>
       </div>
     )

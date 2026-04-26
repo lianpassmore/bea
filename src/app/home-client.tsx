@@ -3,9 +3,15 @@
 import Link from 'next/link'
 import PageBackground from '@/components/page-background'
 import AddToHomeScreenPrompt from '@/components/add-to-home-screen-prompt'
+import ProfileMenu, { type CrisisNotification } from '@/components/profile-menu'
 
 export default function HomeClient({
+  memberId,
   memberName,
+  avatarUrl,
+  notifications,
+  consentGiven,
+  consentGivenAt,
   dailyLine,
   currentGoal,
   whanauGoal,
@@ -13,7 +19,12 @@ export default function HomeClient({
   nextKorero,
   minutesUsed,
 }: {
+  memberId: string | null
   memberName: string | null
+  avatarUrl: string | null
+  notifications: CrisisNotification[]
+  consentGiven: boolean
+  consentGivenAt: string | null
   dailyLine: string
   currentGoal: { id: string; title: string } | null
   whanauGoal: { id: string; title: string } | null
@@ -32,16 +43,32 @@ export default function HomeClient({
     <div className="flex-1 flex flex-col relative z-10 animate-fade-in w-full">
       <PageBackground variant="everyday" />
 
-      <header className="pb-7 sm:pb-9 flex flex-col gap-3 shrink-0">
-        <div className="flex items-center gap-3">
-          <span aria-hidden className="h-px w-6 bg-bea-amber" />
-          <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-olive">
-            {today}
+      <header className="pt-2 pb-7 sm:pb-9 grid grid-cols-[1fr_auto] items-start gap-x-4 shrink-0">
+        <div className="flex flex-col">
+          <p className="font-body text-lg md:text-xl text-bea-charcoal/70">
+            Bea
           </p>
+          <h1 className="font-serif text-4xl md:text-5xl text-bea-charcoal tracking-tight leading-[1.1] mt-4">
+            Kia ora, {memberName}.
+          </h1>
+          <div className="flex items-center gap-3 mt-2">
+            <span aria-hidden className="h-px w-6 bg-bea-amber" />
+            <p className="font-ui text-sm text-bea-olive">
+              {today}
+            </p>
+          </div>
         </div>
-        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-bea-charcoal tracking-tight leading-[1.1]">
-          Kia ora, {memberName}.
-        </h1>
+        <div className="-mt-1.5">
+          <ProfileMenu
+            compact
+            memberId={memberId}
+            memberName={memberName}
+            avatarUrl={avatarUrl}
+            notifications={notifications}
+            consentGiven={consentGiven}
+            consentGivenAt={consentGivenAt}
+          />
+        </div>
       </header>
 
       {(currentGoal || whanauGoal) && (
@@ -52,7 +79,7 @@ export default function HomeClient({
               <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue mb-3 sm:mb-4">
                 Your focus
               </p>
-              <h2 className="font-serif italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-bea-charcoal leading-[1.15] tracking-tight">
+              <h2 className="font-body italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-bea-charcoal leading-[1.15] tracking-tight">
                 {currentGoal.title}
               </h2>
             </div>
@@ -61,9 +88,9 @@ export default function HomeClient({
             <div className="relative pl-5 sm:pl-6">
               <span aria-hidden className="absolute left-0 top-2 bottom-2 w-px bg-bea-amber/55" />
               <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-amber mb-3 sm:mb-4">
-                Family focus
+                Whānau focus
               </p>
-              <h2 className="font-serif italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-bea-charcoal leading-[1.15] tracking-tight">
+              <h2 className="font-body italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-bea-charcoal leading-[1.15] tracking-tight">
                 {whanauGoal.title}
               </h2>
             </div>
@@ -81,7 +108,7 @@ export default function HomeClient({
             <p className="font-ui text-[10px] uppercase tracking-[0.2em] text-bea-blue">
               Next listening
             </p>
-            <p className="font-serif text-lg sm:text-xl text-bea-charcoal tracking-tight">
+            <p className="font-body text-lg sm:text-xl text-bea-charcoal tracking-tight">
               {nextListening ?? 'Not scheduled yet'}
             </p>
           </Link>
@@ -90,9 +117,9 @@ export default function HomeClient({
             className="group rounded-2xl bg-bea-charcoal/3 ring-1 ring-bea-charcoal/10 px-5 py-4 sm:px-6 sm:py-5 flex flex-col gap-2 transition-colors hover:bg-bea-charcoal/4 hover:ring-bea-amber/40"
           >
             <p className="font-ui text-[10px] uppercase tracking-[0.2em] text-bea-amber">
-              Next family check-in
+              Next whānau kōrero
             </p>
-            <p className="font-serif text-lg sm:text-xl text-bea-charcoal tracking-tight">
+            <p className="font-body text-lg sm:text-xl text-bea-charcoal tracking-tight">
               {nextKorero ?? 'Not scheduled yet'}
             </p>
           </Link>

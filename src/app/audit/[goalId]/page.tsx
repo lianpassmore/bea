@@ -324,7 +324,7 @@ function Header({
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="flex items-baseline gap-3">
-      <dd className="font-serif text-2xl text-bea-charcoal">{value}</dd>
+      <dd className="font-body text-2xl text-bea-charcoal">{value}</dd>
       <dt className="font-ui text-[11px] uppercase tracking-[0.12em] text-bea-charcoal/60">{label}</dt>
     </div>
   )
@@ -365,7 +365,7 @@ function SessionCard({
           <span className="font-ui text-xs uppercase tracking-wider text-bea-amber">
             Session {index + 1} / {total}
           </span>
-          <span className="font-serif text-lg md:text-xl text-bea-charcoal">
+          <span className="font-body text-lg md:text-xl text-bea-charcoal">
             {weekday}, {dayMonth}
           </span>
           <span className="font-body text-sm text-bea-charcoal/60">{timeStr}</span>
@@ -448,7 +448,7 @@ function Heard({ event, isLast }: { event: SessionEvent; isLast: boolean }) {
           {heard.familyTone && (
             <p>
               <span className="font-ui uppercase text-[10px] tracking-wider mr-2 text-bea-charcoal/50">
-                family tone
+                whānau tone
               </span>
               {heard.familyTone}
             </p>
@@ -516,7 +516,7 @@ function Considered({ coach }: { coach: CoachReadRow | null }) {
       <ol className="space-y-4">
         {drafts.map((d, i) => (
           <li key={i} className="space-y-1.5">
-            <p className="font-serif text-base md:text-lg text-bea-charcoal leading-relaxed">
+            <p className="font-body text-base md:text-lg text-bea-charcoal leading-relaxed">
               <span className="text-bea-amber/70 mr-2 font-ui text-xs">draft</span>
               <span>“{d.draft}”</span>
             </p>
@@ -537,7 +537,7 @@ function Considered({ coach }: { coach: CoachReadRow | null }) {
           <p className="font-ui text-xs uppercase tracking-wider text-bea-amber mb-2">
             Decided to bring up next time
           </p>
-          <p className="font-serif text-lg text-bea-charcoal">“{coach.response}”</p>
+          <p className="font-body text-lg text-bea-charcoal">“{coach.response}”</p>
         </div>
       )}
 
@@ -580,7 +580,7 @@ function Footer({
               <li key={p.id} className="font-body">
                 <p className="text-bea-charcoal flex items-baseline gap-3">
                   <SeverityDot severity={p.severity} />
-                  <span className="font-serif">{p.title}</span>
+                  <span className="font-body">{p.title}</span>
                   <span className="font-ui text-xs text-bea-charcoal/50">
                     conf {p.confidence.toFixed(2)} ·{' '}
                     {(p.supporting_session_ids ?? []).length} session(s)
@@ -612,7 +612,7 @@ function Footer({
           <ul className="space-y-3">
             {observations.map((o, i) => (
               <li key={i} className="font-body flex items-baseline gap-4">
-                <span className="font-serif text-2xl text-bea-amber">{o.value}</span>
+                <span className="font-body text-2xl text-bea-amber">{o.value}</span>
                 <span className="text-sm text-bea-charcoal/70">
                   {formatShortDate(o.observed_at)} · {o.note ?? '(no note)'}
                 </span>
