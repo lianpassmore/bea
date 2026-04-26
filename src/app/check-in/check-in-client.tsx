@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useConversation, ConversationProvider } from '@elevenlabs/react';
 import PageBackground from '@/components/page-background';
@@ -34,8 +35,6 @@ function displayRole(role: string): string | null {
 
 function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMember | null; individualVision: string | null }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isFamilyMode = searchParams.get('mode') === 'family';
   const [members, setMembers] = useState<Member[] | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
@@ -171,7 +170,7 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
       <div className="flex flex-col flex-1 pt-12 pb-8 md:pt-20 md:pb-12 max-w-sm md:max-w-md lg:max-w-lg mx-auto w-full animate-fade-in">
         <PageBackground variant="witness" />
 
-        {!isFamilyMode && individualVision && (
+        {individualVision && (
           <div className="mb-8 md:mb-12 pb-6 md:pb-8 border-b border-bea-charcoal/20">
             <p className="font-ui text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-bea-blue mb-2 sm:mb-3">
               Your vision
@@ -184,12 +183,10 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
 
         <header className="mb-10 md:mb-16">
           <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
-            {isFamilyMode ? 'Hello, family.' : `Hello, ${authedMember.name}.`}
+            Hello, {authedMember.name}.
           </h1>
           <p className="font-body text-base md:text-lg text-bea-olive mt-4 md:mt-6 leading-relaxed">
-            {isFamilyMode
-              ? "I'm ready for your check-in when you are."
-              : "I'm ready for your individual check-in when you are."}
+            I&rsquo;m ready for your individual check-in when you are.
           </p>
         </header>
 
@@ -333,19 +330,63 @@ function CheckInUI({ authedMember, individualVision }: { authedMember: AuthedMem
   );
 }
 
+function ModeChooser() {
+  return (
+    <div className="flex flex-col flex-1 items-center justify-center px-6 animate-fade-in">
+      <PageBackground variant="witness" />
+
+      <div className="w-full max-w-xs flex flex-col items-center gap-10">
+        <p className="font-serif text-lg md:text-xl text-bea-olive text-center">
+          Who&rsquo;s here today?
+        </p>
+
+        <div className="flex flex-col w-full gap-3">
+          <Link
+            href="/check-in?mode=individual"
+            className="py-5 text-center rounded-full border border-bea-charcoal/20 bg-bea-milk/60 hover:bg-bea-amber/10 hover:border-bea-amber/60 transition-colors duration-300"
+          >
+            <span className="font-serif italic text-xl md:text-2xl text-bea-charcoal">
+              Just me
+            </span>
+          </Link>
+          <Link
+            href="/check-in?mode=family"
+            className="py-5 text-center rounded-full border border-bea-charcoal/20 bg-bea-milk/60 hover:bg-bea-amber/10 hover:border-bea-amber/60 transition-colors duration-300"
+          >
+            <span className="font-serif italic text-xl md:text-2xl text-bea-charcoal">
+              Family
+            </span>
+          </Link>
+        </div>
+
+        <Link
+          href="/"
+          className="font-ui text-xs text-bea-blue hover:text-bea-charcoal transition-colors duration-500"
+        >
+          Cancel
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function CheckInRouter({ authedMember, individualVision, householdVision }: { authedMember: AuthedMember | null; individualVision: string | null; householdVision: string | null }) {
   const searchParams = useSearchParams();
-  const isFamilyMode = searchParams.get('mode') === 'family';
+  const mode = searchParams.get('mode');
 
-  if (isFamilyMode) {
+  if (mode === 'family') {
     return <FamilyCheckIn householdVision={householdVision} />;
   }
 
-  return (
-    <ConversationProvider>
-      <CheckInUI authedMember={authedMember} individualVision={individualVision} />
-    </ConversationProvider>
-  );
+  if (mode === 'individual') {
+    return (
+      <ConversationProvider>
+        <CheckInUI authedMember={authedMember} individualVision={individualVision} />
+      </ConversationProvider>
+    );
+  }
+
+  return <ModeChooser />;
 }
 
 export default function CheckInClient({ authedMember, individualVision, householdVision }: { authedMember: AuthedMember | null; individualVision: string | null; householdVision: string | null }) {

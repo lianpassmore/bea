@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     say = memberId
       ? "No current focus for this person yet."
       : scope === 'whanau'
-        ? "The whānau hasn't set a current focus yet."
+        ? "The family hasn't set a current focus yet."
         : "Nothing in focus right now."
   } else {
     const titles = goals.map((g) => g.title).slice(0, 5)

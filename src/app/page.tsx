@@ -6,6 +6,86 @@ import { getDailyLine } from '@/lib/daily-lines'
 import PageBackground from '@/components/page-background'
 import HomeClient from './home-client'
 
+const DAY_TO_DOW: Record<string, number> = {
+  sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6,
+}
+
+function nextFiring(days: string[] | null, time: string | null): { date: Date; label: string } | null {
+  if (!days?.length || !time) return null
+  const [hh, mm] = time.split(':').map(Number)
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return null
+
+  const targetDows = new Set(
+    days
+      .map((d) => DAY_TO_DOW[d.toLowerCase()])
+      .filter((d): d is number => d !== undefined),
+  )
+  if (!targetDows.size) return null
+
+  const nzNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Pacific/Auckland' }))
+
+  for (let i = 0; i < 8; i++) {
+    const c = new Date(nzNow)
+    c.setDate(c.getDate() + i)
+    c.setHours(hh, mm, 0, 0)
+    if (c <= nzNow) continue
+    if (!targetDows.has(c.getDay())) continue
+    const weekday = c.toLocaleDateString('en-NZ', { weekday: 'short' })
+    const timeStr = c
+      .toLocaleTimeString('en-NZ', { hour: 'numeric', minute: '2-digit', hour12: true })
+      .toLowerCase()
+      .replace(/\s+/g, '')
+    return { date: c, label: `${weekday} · ${timeStr}` }
+  }
+  return null
+}
+
+async function minutesUsedThisMonth(): Promise<number> {
+  const now = new Date()
+  const monthStart = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+  ).toISOString()
+
+  const [checkins, sessions] = await Promise.all([
+    supabaseAdmin
+      .from('check_ins')
+      .select('call_duration_secs')
+      .gte('started_at', monthStart),
+    supabaseAdmin
+      .from('listening_sessions')
+      .select('duration_secs')
+      .gte('started_at', monthStart),
+  ])
+
+  const checkinSecs = (checkins.data ?? []).reduce(
+    (s: number, r: { call_duration_secs: number | null }) =>
+      s + (r.call_duration_secs ?? 0),
+    0,
+  )
+  const sessionSecs = (sessions.data ?? []).reduce(
+    (s: number, r: { duration_secs: number | null }) =>
+      s + (Number(r.duration_secs) || 0),
+    0,
+  )
+  return Math.round((checkinSecs + sessionSecs) / 60)
+}
+
+async function nextScheduleFor(mode: 'listen' | 'group'): Promise<string | null> {
+  const { data } = await supabaseAdmin
+    .from('schedules')
+    .select('days, time')
+    .eq('mode', mode)
+    .eq('active', true)
+  const rows = (data ?? []) as { days: string[]; time: string }[]
+  let earliest: { date: Date; label: string } | null = null
+  for (const r of rows) {
+    const n = nextFiring(r.days, r.time)
+    if (!n) continue
+    if (!earliest || n.date < earliest.date) earliest = n
+  }
+  return earliest?.label ?? null
+}
+
 export default async function Home() {
   const supabase = await createClient()
   const {
@@ -59,12 +139,22 @@ export default async function Home() {
     .maybeSingle()
   const whanauGoal = whanauRow ? (whanauRow as { id: string; title: string }) : null
 
+  const isPrimary = member?.role === 'primary'
+  const [nextListening, nextKorero, minutesUsed] = await Promise.all([
+    nextScheduleFor('listen'),
+    nextScheduleFor('group'),
+    isPrimary ? minutesUsedThisMonth() : Promise.resolve(null),
+  ])
+
   return (
     <HomeClient
       memberName={member?.name ?? null}
       dailyLine={getDailyLine()}
       currentGoal={currentGoal}
       whanauGoal={whanauGoal}
+      nextListening={nextListening}
+      nextKorero={nextKorero}
+      minutesUsed={minutesUsed}
     />
   )
 }

@@ -10,7 +10,7 @@
 }
 
 @theme inline {
-  --font-serif: var(--font-dm-sans);
+  --font-serif: var(--font-dm-serif);
   --font-body: var(--font-lora);
   --font-ui: var(--font-inter);
 }

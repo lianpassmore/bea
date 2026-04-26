@@ -54,7 +54,7 @@ export default function ListenClient() {
           (m) => m.status === 'active' || m.status === 'held',
         )
         setMembers(present)
-        setSelected(new Set(present.map((m) => m.id)))
+        setSelected(new Set())
       })
       .catch(() => setMembers([]))
   }, [])
@@ -230,32 +230,37 @@ export default function ListenClient() {
         )}
 
         {members && members.length > 0 && (
-          <div className="flex flex-col gap-2 mb-8 md:mb-12">
-            {members.map((m) => {
-              const on = selected.has(m.id)
-              const consented = m.status === 'active'
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => toggleMember(m.id)}
-                  className={`flex items-center justify-between py-2.5 border-b transition-colors duration-500 ${
-                    on ? 'border-bea-amber/60' : 'border-bea-charcoal/10'
-                  }`}
-                >
-                  <div className="flex flex-col items-start text-left">
-                    <span className="font-serif text-lg md:text-2xl text-bea-charcoal">{m.name}</span>
-                    {!consented && (
-                      <span className="font-ui text-xs text-bea-blue/70 italic mt-1">
-                        no record kept
-                      </span>
-                    )}
-                  </div>
-                  <span className="font-ui text-xs text-bea-amber">
-                    {on ? 'Here' : 'Not here'}
-                  </span>
-                </button>
-              )
-            })}
+          <div className="mb-8 md:mb-12">
+            <div className="grid grid-cols-3 gap-3">
+              {members.map((m) => {
+                const on = selected.has(m.id)
+                const consented = m.status === 'active'
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => toggleMember(m.id)}
+                    aria-pressed={on}
+                    className={`flex flex-col items-center justify-center text-center px-3 py-5 rounded-2xl border transition-all duration-200 ${
+                      on
+                        ? 'bg-bea-amber border-bea-amber text-bea-charcoal shadow-md ring-2 ring-bea-amber/40 ring-offset-2 ring-offset-bea-milk'
+                        : 'bg-bea-milk border-bea-charcoal/25 text-bea-charcoal'
+                    }`}
+                  >
+                    <span className="font-serif text-lg md:text-xl leading-tight">
+                      {m.name}
+                      {!consented && (
+                        <span className="text-bea-charcoal/60" aria-hidden>*</span>
+                      )}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            {members.some((m) => m.status !== 'active') && (
+              <p className="font-ui text-[11px] text-bea-blue/70 italic mt-3">
+                * no record kept
+              </p>
+            )}
           </div>
         )}
 

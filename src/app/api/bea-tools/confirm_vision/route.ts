@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    say: `I've held that for the whānau: "${text}". You can revisit it whenever it stops feeling true.`,
+    say: `I've held that for the family: "${text}". You can revisit it whenever it stops feeling true.`,
     vision: updated,
   })
 }

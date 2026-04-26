@@ -25,11 +25,11 @@ const MODE_META = {
     description: "I'll listen in the background without speaking.",
   },
   checkin: {
-    label: 'Individual conversation',
+    label: 'Individual check-in',
     description: 'A dedicated moment with one person.',
   },
   group: {
-    label: 'Household conversation',
+    label: 'Family check-in',
     description: 'A moment to speak with everyone present.',
   },
 }
@@ -222,9 +222,14 @@ export default function ScheduleClient({ isPrimary }: { isPrimary: boolean }) {
         <Link href="/" className="font-ui text-sm text-bea-blue hover:text-bea-charcoal transition-colors duration-500">
           ← Return
         </Link>
-        <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal">
-          Rhythms
-        </h1>
+        <div className="flex flex-col gap-3 md:gap-4">
+          <h1 className="font-serif text-2xl md:text-4xl text-bea-charcoal leading-tight">
+            Rhythms
+          </h1>
+          <p className="font-body text-base md:text-lg text-bea-olive leading-relaxed">
+            The times you&rsquo;ve set for me to be present.
+          </p>
+        </div>
       </div>
 
       {/* Schedule list */}
@@ -276,7 +281,7 @@ export default function ScheduleClient({ isPrimary }: { isPrimary: boolean }) {
                   </button>
                   <button
                     onClick={() => handleDelete(schedule.id)}
-                    className="font-ui text-xs tracking-wide text-bea-clay hover:text-red-800 transition-colors duration-500 uppercase"
+                    className="font-ui text-xs tracking-wide uppercase text-bea-clay/70 hover:text-bea-clay transition-colors duration-500"
                   >
                     Remove
                   </button>

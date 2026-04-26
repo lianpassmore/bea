@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { Inter, Lora, DM_Sans } from "next/font/google";
+import { Inter, Lora, DM_Serif_Display } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase-server";
 import { getCurrentMember } from "@/lib/auth";
@@ -10,9 +10,11 @@ import ConsentModal from "@/components/consent-modal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const lora = Lora({ subsets: ["latin"], variable: "--font-lora" });
-const dmSans = DM_Sans({
+const dmSerif = DM_Serif_Display({
   subsets: ["latin"],
-  variable: "--font-dm-sans"
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-dm-serif",
 });
 
 export const metadata: Metadata = {
@@ -93,7 +95,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${lora.variable} ${dmSans.variable} font-body bg-bea-milk text-bea-charcoal antialiased min-h-screen selection:bg-bea-amber selection:text-bea-milk`}
+        className={`${inter.variable} ${lora.variable} ${dmSerif.variable} font-body bg-bea-milk text-bea-charcoal antialiased min-h-screen selection:bg-bea-amber selection:text-bea-milk`}
       >
         {isFullViewport ? (
           // Full-viewport routes (e.g. /audit) render their own chrome and

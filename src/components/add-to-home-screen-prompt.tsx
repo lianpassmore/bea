@@ -78,53 +78,85 @@ export default function AddToHomeScreenPrompt() {
     setMode(null)
   }
 
+  useEffect(() => {
+    if (!mode) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') dismiss()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mode])
+
   if (!mode) return null
 
   return (
     <div
       role="dialog"
-      aria-modal="false"
+      aria-modal="true"
       aria-labelledby="a2hs-title"
-      className="fixed inset-x-0 bottom-24 z-40 px-4 animate-fade-in pointer-events-none"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 animate-fade-in"
     >
-      <div className="mx-auto max-w-md bg-bea-milk/95 backdrop-blur border border-bea-charcoal/15 rounded-2xl shadow-lg p-5 pointer-events-auto">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-3">
-            <p
-              id="a2hs-title"
-              className="font-ui text-[10px] uppercase tracking-[0.2em] text-bea-blue"
-            >
-              Keep Bea close
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={dismiss}
+        className="absolute inset-0 bg-bea-charcoal/40 backdrop-blur-sm"
+      />
+      <div className="relative w-full max-w-md bg-bea-milk border border-bea-charcoal/15 rounded-2xl shadow-xl p-5">
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Close"
+          className="absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full text-bea-olive hover:text-bea-charcoal hover:bg-bea-charcoal/5 transition-colors"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="M6 6l12 12" />
+            <path d="M18 6L6 18" />
+          </svg>
+        </button>
+        <div className="space-y-3 pr-8">
+          <p
+            id="a2hs-title"
+            className="font-ui text-[10px] uppercase tracking-[0.2em] text-bea-blue"
+          >
+            Keep Bea close
+          </p>
+          {mode === 'ios' ? (
+            <p className="font-body text-base leading-relaxed text-bea-charcoal">
+              Tap
+              <ShareIcon />
+              in the toolbar, then choose{' '}
+              <span className="italic">Add to Home Screen</span>.
             </p>
-            {mode === 'ios' ? (
-              <p className="font-body text-base leading-relaxed text-bea-charcoal">
-                Tap
-                <ShareIcon />
-                in the toolbar, then choose{' '}
-                <span className="italic">Add to Home Screen</span>.
-              </p>
-            ) : (
-              <p className="font-body text-base leading-relaxed text-bea-charcoal">
-                Add Bea to your home screen so she&rsquo;s one tap away.
-              </p>
-            )}
-            <div className="flex items-center gap-6 pt-1">
-              {mode === 'install' && (
-                <button
-                  onClick={install}
-                  className="group inline-flex items-center gap-3 font-body text-base text-bea-charcoal transition-opacity hover:opacity-70"
-                >
-                  <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-12" />
-                  Install
-                </button>
-              )}
+          ) : (
+            <p className="font-body text-base leading-relaxed text-bea-charcoal">
+              Add Bea to your home screen so she&rsquo;s one tap away.
+            </p>
+          )}
+          <div className="flex items-center gap-6 pt-1">
+            {mode === 'install' && (
               <button
-                onClick={dismiss}
-                className="font-ui text-xs text-bea-olive hover:text-bea-charcoal transition-colors"
+                onClick={install}
+                className="group inline-flex items-center gap-3 font-body text-base text-bea-charcoal transition-opacity hover:opacity-70"
               >
-                Not now
+                <span className="h-px w-8 bg-bea-amber transition-all duration-700 group-hover:w-12" />
+                Install
               </button>
-            </div>
+            )}
+            <button
+              onClick={dismiss}
+              className="font-ui text-xs text-bea-olive hover:text-bea-charcoal transition-colors"
+            >
+              Not now
+            </button>
           </div>
         </div>
       </div>

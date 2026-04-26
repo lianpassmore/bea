@@ -1,30 +1,22 @@
 'use client'
 
-import { Suspense } from 'react'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
-import { User, Users, BookOpen, Calendar, AudioLines } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { MessageCircle, BookOpen, Calendar, AudioLines } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 type Tab = {
   href: string
   label: string
   icon: LucideIcon
-  match: (pathname: string, mode: string | null) => boolean
+  match: (pathname: string) => boolean
 }
 
-const INDIVIDUAL: Tab = {
-  href: '/check-in?mode=individual',
-  label: 'Individual',
-  icon: User,
-  match: (p, mode) => p.startsWith('/check-in') && mode !== 'family',
-}
-
-const FAMILY: Tab = {
-  href: '/check-in?mode=family',
-  label: 'Family',
-  icon: Users,
-  match: (p, mode) => p.startsWith('/check-in') && mode === 'family',
+const TALK: Tab = {
+  href: '/check-in',
+  label: 'Talk',
+  icon: MessageCircle,
+  match: (p) => p.startsWith('/check-in'),
 }
 
 const NOTES: Tab = {
@@ -53,21 +45,11 @@ export default function FooterBar({
 }: {
   isPrimary?: boolean
 }) {
-  return (
-    <Suspense fallback={null}>
-      <FooterBarInner isPrimary={isPrimary} />
-    </Suspense>
-  )
-}
-
-function FooterBarInner({ isPrimary }: { isPrimary: boolean }) {
   const pathname = usePathname() ?? '/'
-  const searchParams = useSearchParams()
-  const mode = searchParams.get('mode')
 
   const tabs: Tab[] = isPrimary
-    ? [INDIVIDUAL, FAMILY, NOTES, SCHEDULE, LISTEN]
-    : [INDIVIDUAL, NOTES, SCHEDULE]
+    ? [TALK, LISTEN, NOTES, SCHEDULE]
+    : [TALK, NOTES, SCHEDULE]
 
   return (
     <nav
@@ -76,7 +58,7 @@ function FooterBarInner({ isPrimary }: { isPrimary: boolean }) {
     >
       <ul className="max-w-md md:max-w-xl lg:max-w-3xl mx-auto flex items-stretch justify-between px-4 sm:px-6 md:px-8 lg:px-12 py-3">
         {tabs.map((tab) => {
-          const active = tab.match(pathname, mode)
+          const active = tab.match(pathname)
           const Icon = tab.icon
           return (
             <li key={tab.label} className="flex-1">
