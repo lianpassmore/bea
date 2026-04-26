@@ -80,11 +80,12 @@ These are not guidelines. They are constraints baked into every system prompt.
 
 > Every interaction must leave the person with more dignity than they arrived with.
 
-Bea is governed by three frameworks:
+Bea is governed by two frameworks and grounded in two bodies of research:
 
-- **He Tangata, He Karetao, He Ātārangi** (Dr Karaitiana Taiuru) — Kaupapa Māori framework for AI. Bea is He Ātārangi: a shadow of human intelligence. She is present, but not the point. Human connection is the point.
-- **Tikanga-Led 10-Pou Framework** (Passmore & Palamo, v1.1, April 2026) — relational AI design centred on mana, whakawhanaungatanga, and tika.
-- **Project Rise Research** — lived-experience research on conversational AI in vulnerable family contexts.
+- **He Tangata, He Karetao, He Ātārangi** (Dr Karaitiana Taiuru), the Kaupapa Māori framework for AI. Bea is He Ātārangi, a shadow of human intelligence. She is present, but not the point. Human connection is the point.
+- **Tikanga-Led Framework for Conversational AI Agents v1.1** (Passmore & Palamo, April 2026), relational AI design centred on mana, whakawhanaungatanga, and tika.
+- **Whānau Intelligence** (Passmore), drawing on Spiller, Wolfgramm, Henry, Pouwhare, and the wānanga literature. The platform Bea is built on.
+- **Project Rise** (Passmore), 18 months of research on conversational AI in vulnerable conversations, spaces, and contexts. The underlying research that preceded the Whānau Intelligence work and informed both it and this build.
 
 ---
 
@@ -181,6 +182,8 @@ docs/
 
 ## Why Bea
 
-Lian Passmore's master's research is on relational conversational AI for vulnerable spaces. This is not an academic exercise — it is the prototype of a theory that the most meaningful thing AI can do for a family is to see them as a whole, not as individuals to be optimised.
+Bea is built by Lian Passmore, off the back of 18 months of Project Rise research on conversational AI in vulnerable conversations, spaces, and contexts. The Whānau Intelligence work followed and became the platform Bea sits on. The build is governed by Dr Karaitiana Taiuru's Kaupapa Māori framework for AI, and by the Tikanga-Led Framework for Conversational AI Agents v1.1, co-written by Passmore and Lee Palamo.
 
-Bea is what it looks like when the answer to "how should AI support wellbeing?" is: *quietly, without diagnosis, with dignity, and with the family — not the individual — as the unit of care.*
+This is not an academic exercise. It is the prototype of a theory that the most meaningful thing AI can do for a family is to see them as a whole, not as individuals to be optimised.
+
+Bea is what it looks like when the answer to "how should AI support wellbeing?" is: *quietly, without diagnosis, with dignity, and with the family, not the individual, as the unit of care.*

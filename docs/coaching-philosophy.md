@@ -327,6 +327,11 @@ The four foundational frameworks governing Bea remain:
   Wolfgramm, Henry, Pouwhare, and the wānanga literature)
 - The Wall of No (the structural constraints in Bea's code)
 
+The underlying research is Project Rise (Passmore), 18 months of work on
+conversational AI in vulnerable conversations, spaces, and contexts.
+Project Rise preceded the Whānau Intelligence work and informed both it
+and the stance taken here.
+
 ---
 
 *Mā te kōrero ka ora. Through conversation, we live.*
