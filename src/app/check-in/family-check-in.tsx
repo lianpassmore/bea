@@ -363,7 +363,7 @@ function FamilyCheckInUI({ householdVision }: { householdVision: string | null }
           </h1>
           {isConnected && (
             <p className="font-body text-base md:text-lg text-bea-olive italic">
-              {conversation.isSpeaking ? 'Kōrero. I am speaking.' : 'Whakarongo. I am listening.'}
+              {conversation.isSpeaking ? 'I am speaking.' : 'I am listening.'}
             </p>
           )}
         </div>

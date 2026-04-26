@@ -100,6 +100,7 @@ ${formatPriorSessions(priors)}`
       model: 'claude-opus-4-7',
       max_tokens: 8000,
       thinking: { type: 'adaptive', display: 'summarized' },
+      output_config: { effort: 'high' },
       system: GUARDIAN_ABSENCE_PROMPT,
       messages: [
         {

@@ -335,6 +335,7 @@ Read the memos side-by-side. Find the pattern none of them alone can see.`
       model: 'claude-opus-4-7',
       max_tokens: 10000,
       thinking: { type: 'adaptive', display: 'summarized' },
+      output_config: { effort: 'high' },
       system: GUARDIAN_INSIGHT_PROMPT,
       messages: [{ role: 'user', content: userContent }],
     })

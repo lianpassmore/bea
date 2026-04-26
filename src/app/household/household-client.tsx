@@ -439,7 +439,7 @@ function HouseholdScreen({ householdVision }: { householdVision: string }) {
           <div className="space-y-4">
             <p className="font-body text-2xl md:text-3xl text-bea-charcoal">{activeSession.label}.</p>
             <p className="font-body text-base md:text-lg text-bea-olive italic transition-opacity duration-500">
-              {conversation.isSpeaking ? 'Kōrero. I am speaking.' : 'Whakarongo. I am listening.'}
+              {conversation.isSpeaking ? 'I am speaking.' : 'I am listening.'}
             </p>
           </div>
 

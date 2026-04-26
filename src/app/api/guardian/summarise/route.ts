@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       model: 'claude-opus-4-7',
       max_tokens: 8000,
       thinking: { type: 'adaptive', display: 'summarized' },
+      output_config: { effort: 'high' },
       system: GUARDIAN_SUMMARY_PROMPT,
       messages: [
         {

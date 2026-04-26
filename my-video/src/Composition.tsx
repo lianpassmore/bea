@@ -1,3 +1,14 @@
+import { AbsoluteFill } from "remotion";
+import { BRAND } from "./brand";
+
 export const MyComposition = () => {
-  return null;
+  return (
+    <AbsoluteFill
+      style={{
+        backgroundColor: BRAND.warmMilk,
+        color: BRAND.softCharcoal,
+        fontFamily: BRAND.fontSerif,
+      }}
+    />
+  );
 };
